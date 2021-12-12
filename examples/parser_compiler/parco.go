@@ -22,7 +22,7 @@ func getLifeSense(x interface{}) interface{} {
 }
 
 func getGrades(x interface{}) interface{} {
-	return x.(Example).Grades
+	return types.UInt8Iter(x.(Example).Grades)
 }
 
 func main() {

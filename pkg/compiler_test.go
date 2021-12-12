@@ -30,7 +30,7 @@ func getNum(x interface{}) interface{} {
 }
 
 func getArr(x interface{}) interface{} {
-	return x.(TestStruct).Arr
+	return types.UInt16Iter(x.(TestStruct).Arr)
 }
 
 func fillSeq(le int) []uint16 {

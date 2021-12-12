@@ -7,7 +7,6 @@ import (
 
 type VarcharType struct {
 	head Type
-	// TODO: IoC parser, typeFactory
 }
 
 func (v VarcharType) Length() int {

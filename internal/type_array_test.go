@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"encoding/binary"
 	"testing"
 )
 
@@ -13,7 +12,7 @@ func createSlice(value uint16, length int) []uint16 {
 		r = append(r, value)
 	}
 
-	return r
+	return (r)
 }
 
 func TestArrayType_Compile(t *testing.T) {
@@ -27,35 +26,35 @@ func TestArrayType_Compile(t *testing.T) {
 		{
 			Name:         "compile array(uint8) should succeed",
 			Type:         Array(2, UInt8(), UInt8()),
-			Payload:      []uint8{255, 0},
+			Payload:      UInt8Iter([]uint8{255, 0}),
 			Expected:     []byte{2, 255, 0},
 			ExpectsError: false,
 		},
 		{
 			Name:         "compile array(uint8) with payload larger than configured should fail",
 			Type:         Array(2, UInt8(), UInt8()),
-			Payload:      createSlice(1, 257),
+			Payload:      UInt16Iter(createSlice(1, 257)),
 			Expected:     nil,
 			ExpectsError: true,
 		},
 		{
 			Name:         "compile array(uint16) should succeed",
-			Type:         Array(2, UInt8(), UInt16(binary.LittleEndian)),
-			Payload:      []uint16{65535, 512},
+			Type:         Array(2, UInt8(), UInt16LE()),
+			Payload:      UInt16Iter([]uint16{65535, 512}),
 			Expected:     []byte{2, 255, 255, 0, 2},
 			ExpectsError: false,
 		},
 		{
 			Name:         "compile array(uint16) with payload larger than configured should fail",
-			Type:         Array(2, UInt8(), UInt16(binary.LittleEndian)),
-			Payload:      createSlice(1, 257),
+			Type:         Array(2, UInt8(), UInt16LE()),
+			Payload:      UInt16Iter(createSlice(1, 257)),
 			Expected:     nil,
 			ExpectsError: true,
 		},
 		{
 			Name:         "compile array(uint16, uint16) should success",
-			Type:         Array(2, UInt16(binary.BigEndian), UInt16(binary.LittleEndian)),
-			Payload:      []uint16{1, 2},
+			Type:         Array(2, UInt16BE(), UInt16LE()),
+			Payload:      UInt16Iter([]uint16{1, 2}),
 			Expected:     []byte{0, 2, 1, 0, 2, 0},
 			ExpectsError: false,
 		},

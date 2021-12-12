@@ -8,9 +8,10 @@ struct tags and reflection. While sometimes that can be convenient for some
 scenarios, that approach leaves little room to define and register custom types in
 addition to have an appositive effect on performance.
 
-In spite of that, due to the lack of generics, this package still uses reflection
-for iterable interfaces in order for types to adhere to external interfaces. Do note
-that `unsafe` is also employed (quite isolated though).
+Do note:
+
+- `unsafe` is employed (quite isolated though).
+- To avoid reflection, adapters are provided in order to iterate through to slices.
 
 ## Usage
 
@@ -44,7 +45,7 @@ func getLifeSense(x interface{}) interface{} {
 }
 
 func getGrades(x interface{}) interface{} {
-    return x.(Example).Grades
+    return types.UInt8Iter(x.(Example).Grades)
 }
 
 func main() {
@@ -103,6 +104,7 @@ parser := parco.NewBuilder().
 
 
 result, err := parser.ParseBytes(raw)
+
 if err != nil {
     log.Fatal(err)
 }
@@ -139,7 +141,7 @@ func getLifeSense(x interface{}) interface{} {
 }
 
 func getGrades(x interface{}) interface{} {
-    return x.(Example).Grades
+    return types.Uint8Iter(x.(Example).Grades)
 }
 
 func main() {
@@ -172,22 +174,19 @@ For fully functional examples showing the whole API, refer to [Examples](https:/
 ```
 goos: linux
 goarch: amd64
+
 pkg: github.com/sonirico/parco/pkg
+
 cpu: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
-BenchmarkParco_Compile
-BenchmarkParco_Compile/small_size
-BenchmarkParco_Compile/small_size-12         	1000000000	         0.0000043 ns/op	        35.00 bytes/op
-BenchmarkParco_Compile/medium_size
-BenchmarkParco_Compile/medium_size-12        	1000000000	         0.0000160 ns/op	       325.0 bytes/op
-BenchmarkParco_Compile/large_size
-BenchmarkParco_Compile/large_size-12         	1000000000	         0.0000568 ns/op	      3206 bytes/op
-BenchmarkJson_Compile
-BenchmarkJson_Compile/small_size
-BenchmarkJson_Compile/small_size-12          	1000000000	         0.0000042 ns/op	       116.0 bytes/op
-BenchmarkJson_Compile/medium_size
-BenchmarkJson_Compile/medium_size-12         	1000000000	         0.0000159 ns/op	       756.0 bytes/op
-BenchmarkJson_Compile/large_size
-BenchmarkJson_Compile/large_size-12          	1000000000	         0.0000744 ns/op	      7071 bytes/op
+
+BenchmarkParco_Compile/small_size-12         	1000000000	         0.0000032 ns/op	        35.00 bytes/op	       0 B/op	       0 allocs/op
+BenchmarkParco_Compile/medium_size-12        	1000000000	         0.0000082 ns/op	       325.0 bytes/op	       0 B/op	       0 allocs/op
+BenchmarkParco_Compile/large_size-12         	1000000000	         0.0000470 ns/op	      3206 bytes/op	       0 B/op	       0 allocs/op
+
+BenchmarkJson_Compile/small_size-12          	1000000000	         0.0000052 ns/op	       116.0 bytes/op	       0 B/op	       0 allocs/op
+BenchmarkJson_Compile/medium_size-12         	1000000000	         0.0000207 ns/op	       756.0 bytes/op	       0 B/op	       0 allocs/op
+BenchmarkJson_Compile/large_size-12          	1000000000	         0.0000629 ns/op	      7071 bytes/op	       0 B/op	       0 allocs/op
+
 PASS
 ok  	github.com/sonirico/parco/pkg	0.010s
 
@@ -200,3 +199,4 @@ ok  	github.com/sonirico/parco/pkg	0.010s
 - Extend interface to include version
 - Static code generation
 - Replace `encoding/binary` usage by faster implementations
+- Support for nested schema definition

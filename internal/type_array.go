@@ -5,8 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"reflect"
 )
+
+type iterable interface {
+	Range(ranger) error
+	Len() int
+}
 
 var (
 	NoopArr = ArrayType{}
@@ -36,20 +40,19 @@ func (t ArrayType) Compile(x interface{}, w io.Writer) error {
 		return err
 	}
 
-	slice := reflect.ValueOf(x) // TODO: better check it
+	iter := x.(iterable)
 
-	if slice.Len() != t.length {
+	if iter.Len() != t.length {
 		return NewErrCompile(fmt.Sprintf("unexpected length, want %d but have %d",
-			t.length, slice.Len()))
+			t.length, iter.Len()))
 	}
 
-	for i := 0; i < slice.Len(); i++ {
-		if err := t.inner.Compile(slice.Index(i).Interface(), w); err != nil {
+	return iter.Range(func(x interface{}) error {
+		if err := t.inner.Compile(x, w); err != nil {
 			return err
 		}
-	}
-
-	return nil
+		return nil
+	})
 }
 
 func Array(length int, header, inner Type) ArrayType {
