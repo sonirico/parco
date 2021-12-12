@@ -70,3 +70,11 @@ func (i UInt16Type) ParseLength(data []byte) (int, error) {
 func UInt16(order binary.ByteOrder) UInt16Type {
 	return UInt16Type{order: order}
 }
+
+func UInt16LE() UInt16Type {
+	return UInt16(binary.LittleEndian)
+}
+
+func UInt16BE() UInt16Type {
+	return UInt16(binary.BigEndian)
+}

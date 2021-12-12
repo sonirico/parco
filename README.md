@@ -74,7 +74,7 @@ func main() {
     }
 
     greet, _ := result.GetString("greet")
-    lifeSense, _ := result.GetString("life_sense")
+    lifeSense, _ := result.GetUint8("life_sense")
     grades, _ := result.GetArray("grades")
 
     log.Println("greet", greet)
@@ -108,7 +108,7 @@ if err != nil {
 }
 
 greet, _ := result.GetString("greet")
-lifeSense, _ := result.GetString("life_sense")
+lifeSense, _ := result.GetUInt8("life_sense")
 grades, _ := result.GetArray("grades")
 
 log.Println("greet", greet)
@@ -165,6 +165,33 @@ func main() {
 ```
 
 For fully functional examples showing the whole API, refer to [Examples](https://github.com/sonirico/parco/tree/master/examples).
+
+
+## Benchmarks
+
+```
+goos: linux
+goarch: amd64
+pkg: github.com/sonirico/parco/pkg
+cpu: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
+BenchmarkParco_Compile
+BenchmarkParco_Compile/small_size
+BenchmarkParco_Compile/small_size-12         	1000000000	         0.0000043 ns/op	        35.00 bytes/op
+BenchmarkParco_Compile/medium_size
+BenchmarkParco_Compile/medium_size-12        	1000000000	         0.0000160 ns/op	       325.0 bytes/op
+BenchmarkParco_Compile/large_size
+BenchmarkParco_Compile/large_size-12         	1000000000	         0.0000568 ns/op	      3206 bytes/op
+BenchmarkJson_Compile
+BenchmarkJson_Compile/small_size
+BenchmarkJson_Compile/small_size-12          	1000000000	         0.0000042 ns/op	       116.0 bytes/op
+BenchmarkJson_Compile/medium_size
+BenchmarkJson_Compile/medium_size-12         	1000000000	         0.0000159 ns/op	       756.0 bytes/op
+BenchmarkJson_Compile/large_size
+BenchmarkJson_Compile/large_size-12          	1000000000	         0.0000744 ns/op	      7071 bytes/op
+PASS
+ok  	github.com/sonirico/parco/pkg	0.010s
+
+```
 
 
 ## TODO

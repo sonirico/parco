@@ -46,10 +46,6 @@ func (b Builder) parser() Parser {
 	return Parser{fields: b.fields}
 }
 
-func (b Builder) Struct() {
-
-}
-
 func (b Builder) Parser() Parser {
 	return Parser{fields: b.fields}
 }
