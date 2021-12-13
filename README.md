@@ -171,25 +171,32 @@ For fully functional examples showing the whole API, refer to [Examples](https:/
 
 ## Benchmarks
 
+```shell
+make bench # or
+CGO_ENABLED=1 go test -v -failfast -race -bench=. -benchtime=100x -benchmem ./internal/... ./pkg/... -run . -timeout=1m
 ```
-goos: linux
+
+```
+goos: darwin
 goarch: amd64
-
 pkg: github.com/sonirico/parco/pkg
-
 cpu: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
-
-BenchmarkParco_Compile/small_size-12         	1000000000	         0.0000032 ns/op	        35.00 bytes/op	       0 B/op	       0 allocs/op
-BenchmarkParco_Compile/medium_size-12        	1000000000	         0.0000082 ns/op	       325.0 bytes/op	       0 B/op	       0 allocs/op
-BenchmarkParco_Compile/large_size-12         	1000000000	         0.0000470 ns/op	      3206 bytes/op	       0 B/op	       0 allocs/op
-
-BenchmarkJson_Compile/small_size-12          	1000000000	         0.0000052 ns/op	       116.0 bytes/op	       0 B/op	       0 allocs/op
-BenchmarkJson_Compile/medium_size-12         	1000000000	         0.0000207 ns/op	       756.0 bytes/op	       0 B/op	       0 allocs/op
-BenchmarkJson_Compile/large_size-12          	1000000000	         0.0000629 ns/op	      7071 bytes/op	       0 B/op	       0 allocs/op
-
+BenchmarkParco_Compile
+BenchmarkParco_Compile/small_size
+BenchmarkParco_Compile/small_size-12                 100                94.21 ns/op             35.00 payload_bytes/op         3 B/op          0 allocs/op
+BenchmarkParco_Compile/medium_size
+BenchmarkParco_Compile/medium_size-12                100               370.0 ns/op             325.0 payload_bytes/op         14 B/op          2 allocs/op
+BenchmarkParco_Compile/large_size
+BenchmarkParco_Compile/large_size-12                 100              3694 ns/op              3206 payload_bytes/op          138 B/op         20 allocs/op
+BenchmarkJson_Compile
+BenchmarkJson_Compile/small_size
+BenchmarkJson_Compile/small_size-12                  100               176.9 ns/op             116.0 payload_bytes/op          1 B/op          0 allocs/op
+BenchmarkJson_Compile/medium_size
+BenchmarkJson_Compile/medium_size-12                 100               765.3 ns/op             756.0 payload_bytes/op          8 B/op          0 allocs/op
+BenchmarkJson_Compile/large_size
+BenchmarkJson_Compile/large_size-12                  100              6693 ns/op              7071 payload_bytes/op           82 B/op          0 allocs/op
 PASS
-ok  	github.com/sonirico/parco/pkg	0.010s
-
+ok      github.com/sonirico/parco/pkg   0.299s
 ```
 
 
