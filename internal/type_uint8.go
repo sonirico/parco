@@ -2,8 +2,9 @@ package internal
 
 import (
 	"errors"
-	"github.com/sonirico/parco/internal/utils"
 	"io"
+
+	"github.com/sonirico/parco/internal/utils"
 )
 
 func parseUInt8(r io.Reader) (uint8, error) {

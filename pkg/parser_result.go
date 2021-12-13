@@ -1,8 +1,9 @@
 package pkg
 
 import (
-	"github.com/sonirico/parco/internal"
 	"reflect"
+
+	"github.com/sonirico/parco/internal"
 )
 
 type Result struct {

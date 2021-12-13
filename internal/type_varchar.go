@@ -1,8 +1,9 @@
 package internal
 
 import (
-	"github.com/sonirico/parco/internal/utils"
 	"io"
+
+	"github.com/sonirico/parco/internal/utils"
 )
 
 type VarcharType struct {

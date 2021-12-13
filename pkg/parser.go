@@ -1,9 +1,10 @@
 package pkg
 
 import (
+	"io"
+
 	"github.com/sonirico/parco/internal"
 	"github.com/sonirico/parco/internal/utils"
-	"io"
 )
 
 type Parser struct {

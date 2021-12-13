@@ -2,8 +2,9 @@ package internal
 
 import (
 	"encoding/binary"
-	"github.com/sonirico/parco/internal/utils"
 	"io"
+
+	"github.com/sonirico/parco/internal/utils"
 )
 
 func parseUInt16Reader(r io.Reader, order binary.ByteOrder) (uint16, error) {

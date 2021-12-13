@@ -1,8 +1,9 @@
 package pkg
 
 import (
-	"github.com/sonirico/parco/internal"
 	"io"
+
+	"github.com/sonirico/parco/internal"
 )
 
 type Compiler struct {
