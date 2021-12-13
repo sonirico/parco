@@ -3,11 +3,12 @@ package pkg
 import (
 	bytes "bytes"
 	"encoding/json"
-	types "github.com/sonirico/parco/internal"
 	"math"
 	"math/rand"
 	"strings"
 	"testing"
+
+	types "github.com/sonirico/parco/internal"
 )
 
 type compileFuncType func(t TestStruct) (int, error)
@@ -76,11 +77,29 @@ var tests = []TestStruct{
 	},
 }
 
+func jsonCompilerFactory(_ TestStruct) compileFuncType {
+	return func(t TestStruct) (int, error) {
+		bts, err := json.Marshal(t)
+		return len(bts), err
+	}
+}
+
+func parcoCompilerFactory(t TestStruct) compileFuncType {
+	compiler := newCompiler(len(t.Arr))
+	return func(ts TestStruct) (int, error) {
+		buf := bytes.NewBuffer(nil)
+		err := compiler.Compile(t, buf)
+		return buf.Len(), err
+	}
+}
+
 func benchmarkCompile(b *testing.B, tests []TestStruct, compileFuncFactory compileFuncFactory) {
 	for _, test := range tests {
+		// creating compiler needs different field types as per different test payloads
 		compileFunc := compileFuncFactory(test)
-		for i := 0; i < b.N; i++ {
-			b.Run(test.Name, func(b *testing.B) {
+		b.Run(test.Name, func(b *testing.B) {
+			var totalBytes int
+			for i := 0; i < b.N; i++ {
 				b.ResetTimer()
 				b.StartTimer()
 				n, err := compileFunc(test)
@@ -88,29 +107,17 @@ func benchmarkCompile(b *testing.B, tests []TestStruct, compileFuncFactory compi
 				if err != nil {
 					b.Fatal(err)
 				}
-				b.ReportMetric(float64(n), "bytes/op")
-			})
-		}
+				totalBytes += n
+			}
+			b.ReportMetric(float64(totalBytes/b.N), "payload_bytes/op")
+		})
 	}
-
 }
 
 func BenchmarkParco_Compile(b *testing.B) {
-	benchmarkCompile(b, tests, func(t TestStruct) compileFuncType {
-		compiler := newCompiler(len(t.Arr))
-		return func(tt TestStruct) (int, error) {
-			buf := bytes.NewBuffer(nil)
-			err := compiler.Compile(t, buf)
-			return buf.Len(), err
-		}
-	})
+	benchmarkCompile(b, tests, parcoCompilerFactory)
 }
 
 func BenchmarkJson_Compile(b *testing.B) {
-	benchmarkCompile(b, tests, func(t TestStruct) compileFuncType {
-		return func(t TestStruct) (int, error) {
-			bts, err := json.Marshal(t)
-			return len(bts), err
-		}
-	})
+	benchmarkCompile(b, tests, jsonCompilerFactory)
 }
