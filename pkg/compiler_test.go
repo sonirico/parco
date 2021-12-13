@@ -100,12 +100,9 @@ func benchmarkCompile(b *testing.B, tests []TestStruct, compileFuncFactory compi
 		b.Run(test.Name, func(b *testing.B) {
 			var totalBytes int
 			for i := 0; i < b.N; i++ {
-				b.ResetTimer()
-				b.StartTimer()
 				n, err := compileFunc(test)
-				b.StopTimer()
 				if err != nil {
-					b.Fatal(err)
+					b.Error(err)
 				}
 				totalBytes += n
 			}

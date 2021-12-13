@@ -6,7 +6,7 @@ XC_ARCH := amd64
 LD_FLAGS := -X main.version=$(VERSION) -s -w
 SOURCE_FILES ?=./internal/... ./pkg/...
 TEST_PATTERN ?=.
-BENCH_OPTIONS ?= -bench=. -benchtime=100x -benchmem
+BENCH_OPTIONS ?= -bench=. -benchtime=1000x -benchmem
 TEST_OPTIONS := -v -failfast -race
 CLEAN_OPTIONS ?=-modcache -testcache
 CLEAN_OPTIONS :=-testcache
