@@ -1,3 +1,6 @@
 .idea
 .vscode
 *.swp
+.test
+*.prof
+*.test

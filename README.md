@@ -8,117 +8,47 @@ struct tags and reflection. While sometimes that can be convenient for some
 scenarios, that approach leaves little room to define and register custom types in
 addition to have an appositive effect on performance.
 
-Do note:
-
-- `unsafe` is employed (quite isolated though).
-- To avoid reflection, adapters are provided in order to iterate through to slices.
+Do note that `unsafe` is employed (quite isolated though, logging and debugging purposes).
 
 ## Usage
-
-So the most complete usage would look like this
-
-
-### Parser + compiler
-
-```go
-package main
-
-import (
-    "bytes"
-    types "github.com/sonirico/parco/internal"
-    parco "github.com/sonirico/parco/pkg"
-    "log"
-)
-
-type Example struct {
-    Greet     string
-    LifeSense int
-    Grades    []uint8
-}
-
-func getGreet(x interface{}) interface{} {
-    return x.(Example).Greet
-}
-
-func getLifeSense(x interface{}) interface{} {
-    return x.(Example).LifeSense
-}
-
-func getGrades(x interface{}) interface{} {
-    return types.UInt8Iter(x.(Example).Grades)
-}
-
-func main() {
-    parser, compiler := parco.NewBuilder().
-        FieldGet("greet", types.SmallVarchar(), getGreet).
-        FieldGet("life_sense", types.UInt8(), getLifeSense).
-        FieldGet("grades", types.Array(2, types.UInt8(), types.UInt8()), getGrades).
-        ParCo()
-
-    ex := Example{
-        Greet:     "hey",
-        LifeSense: 42,
-        Grades:    []uint8{5, 6},
-    }
-
-    output := bytes.NewBuffer(nil)
-    if err := compiler.Compile(ex, output); err != nil {
-        log.Fatal(err)
-    }
-
-    raw := output.Bytes()
-    log.Println("raw bytes", raw)
-
-    result, err := parser.ParseBytes(raw)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    greet, _ := result.GetString("greet")
-    lifeSense, _ := result.GetUint8("life_sense")
-    grades, _ := result.GetArray("grades")
-
-    log.Println("greet", greet)
-    log.Println("life sense", lifeSense)
-    log.Println("total grades", grades.Len())
-
-    grades.Range(func(value types.Value) {
-        log.Println("grade", value.GetUInt8())
-    })
-}
-
-```
-
-However, both parser and compiler can be used independently.
 
 #### Parser
 
 ```go
-raw := []byte{4, 72, 79, 76, 65, 42, 9, 10}
+data := []byte{4, 72, 79, 76, 65, 42, 2, 9, 10}
 
-parser := parco.NewBuilder().
-    Field("greet", types.SmallVarchar()).
-    Field("life_sense", types.UInt8()).
-    Field("grades", types.Array(2, types.UInt8(), types.UInt8())).
-    Parser()
+parser := parco.NewParserResult().
+    SmallVarchar("greet").
+    UInt8("life_sense").
+    Array("grades", parco.AnyArray(
+        parco.UInt8Header(),
+        parco.AnyUInt8Body(),
+        nil,
+    ))
 
-
-result, err := parser.ParseBytes(raw)
+parsed, err := parser.ParseBytes(data)
 
 if err != nil {
     log.Fatal(err)
 }
 
-greet, _ := result.GetString("greet")
-lifeSense, _ := result.GetUInt8("life_sense")
-grades, _ := result.GetArray("grades")
+log.Println(parsed.GetString("greet"))
+log.Println(parsed.GetUInt8("life_sense"))
 
-log.Println("greet", greet)
-log.Println("life sense", lifeSense)
-log.Println("total grades", grades.Len())
+grades, err := parsed.GetArray("grades")
 
-grades.Range(func(value types.Value) {
-    log.Println("grade", value.GetUInt8())
+if err != nil {
+    log.Fatal(err)
+}
+
+log.Println(grades.At(0))
+log.Println(grades.At(1))
+
+v, _ := grades.At(0)
+log.Println(v.GetUInt8())
+
+grades.Range(func(value parco.Value) {
+    log.Println(value.GetUInt8())
 })
 
 ```
@@ -128,41 +58,37 @@ grades.Range(func(value types.Value) {
 ```go
 type Example struct {
     Greet     string
-    LifeSense int
+    LifeSense uint8
     Grades    []uint8
 }
 
-func getGreet(x interface{}) interface{} {
-    return x.(Example).Greet
+compiler := parco.NewCompiler[Example]().
+    SmallVarchar("greet", func(e Example) string {
+        return e.Greet
+    }).
+    UInt8("life_sense", func(e Example) uint8 {
+        return e.LifeSense
+    }).
+    Array("grades", parco.Array[Example, uint8](
+        parco.UInt8Header(),
+        parco.UInt8Body(),
+        func(e Example) parco.Iterable[uint8] {
+            return parco.UInt8Iter(e.Grades)
+        }),
+    )
+
+ex := Example{
+    Greet:     "hey",
+    LifeSense: 42,
+    Grades:    []uint8{5, 6},
 }
 
-func getLifeSense(x interface{}) interface{} {
-    return x.(Example).LifeSense
+output := bytes.NewBuffer(nil)
+if err := compiler.Compile(ex, output); err != nil {
+    log.Fatal(err)
 }
 
-func getGrades(x interface{}) interface{} {
-    return types.Uint8Iter(x.(Example).Grades)
-}
-
-func main() {
-    compiler := parco.NewBuilder().
-        FieldGet("greet", types.SmallVarchar(), getGreet).
-        FieldGet("life_sense", types.UInt8(), getLifeSense).
-        FieldGet("grades", types.Array(2, types.UInt8(), types.UInt8()), getGrades).
-        Compiler()
-
-    ex := Example{
-        Greet:     "hey",
-        LifeSense: 42,
-        Grades:    []uint8{5, 6},
-    }
-
-    output := bytes.NewBuffer(nil)
-    if err := compiler.Compile(ex, output); err != nil {
-        log.Fatal(err)
-    }
-    log.Println(output.Bytes())
-}
+log.Println(output.Bytes())
 
 ```
 
@@ -177,9 +103,14 @@ CGO_ENABLED=1 go test -v -failfast -race -bench=. -benchtime=1000x -benchmem ./i
 ```
 
 ```
+<<<<<<< HEAD
+=======
+goos: linux
+>>>>>>> 230db27 (fix: remove -race flag on benchmarks)
 goarch: amd64
-pkg: github.com/sonirico/parco/pkg
+pkg: github.com/sonirico/parco
 cpu: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
+<<<<<<< HEAD
 BenchmarkParco_Compile
 BenchmarkParco_Compile/small_size
 BenchmarkParco_Compile/small_size-12             1507412               790.8 ns/op              35.00 payload_bytes/op       326 B/op         29 allocs/op
@@ -196,6 +127,36 @@ BenchmarkJson_Compile/large_size
 BenchmarkJson_Compile/large_size-12                32286             37576 ns/op              7071 payload_bytes/op         8272 B/op          2 allocs/op
 PASS
 ok      github.com/sonirico/parco/pkg   9.826s
+=======
+BenchmarkParcoAlloc_Compile
+BenchmarkParcoAlloc_Compile/small_size
+BenchmarkParcoAlloc_Compile/small_size-12                1741048               661.4 ns/op              47.00 payload_bytes/op       121 B/op          3 allocs/op
+BenchmarkParcoAlloc_Compile/medium_size
+BenchmarkParcoAlloc_Compile/medium_size-12                319216              3714 ns/op               338.0 payload_bytes/op        121 B/op          3 allocs/op
+BenchmarkParcoAlloc_Compile/large_size
+BenchmarkParcoAlloc_Compile/large_size-12                  34654             34305 ns/op              3218 payload_bytes/op          120 B/op          2 allocs/op
+BenchmarkParcoDiscard_Compile
+BenchmarkParcoDiscard_Compile/small_size
+BenchmarkParcoDiscard_Compile/small_size-12              1945192               612.0 ns/op              47.00 payload_bytes/op       121 B/op          3 allocs/op
+BenchmarkParcoDiscard_Compile/medium_size
+BenchmarkParcoDiscard_Compile/medium_size-12              334830              3411 ns/op               338.0 payload_bytes/op        121 B/op          3 allocs/op
+BenchmarkParcoDiscard_Compile/large_size
+BenchmarkParcoDiscard_Compile/large_size-12                37971             31599 ns/op              3218 payload_bytes/op          120 B/op          2 allocs/op
+BenchmarkJson_Compile
+BenchmarkJson_Compile/small_size
+BenchmarkJson_Compile/small_size-12                      1938532               607.2 ns/op             116.0 payload_bytes/op        192 B/op          2 allocs/op
+BenchmarkJson_Compile/medium_size
+BenchmarkJson_Compile/medium_size-12                      367490              3015 ns/op               756.0 payload_bytes/op        832 B/op          2 allocs/op
+BenchmarkJson_Compile/large_size
+BenchmarkJson_Compile/large_size-12                        44212             27532 ns/op              7071 payload_bytes/op         8263 B/op          2 allocs/op
+BenchmarkMsgpack_Compile
+BenchmarkMsgpack_Compile/small_size
+BenchmarkMsgpack_Compile/small_size-12                   1399462               855.1 ns/op              74.00 payload_bytes/op       320 B/op          4 allocs/op
+BenchmarkMsgpack_Compile/medium_size
+BenchmarkMsgpack_Compile/medium_size-12                   264453              4176 ns/op               458.0 payload_bytes/op        944 B/op          5 allocs/op
+BenchmarkMsgpack_Compile/large_size
+BenchmarkMsgpack_Compile/large_size-12                     32216             36783 ns/op              4238 payload_bytes/op         9651 B/op          6 allocs/op
+>>>>>>> 230db27 (fix: remove -race flag on benchmarks)
 ```
 
 ## TODO
@@ -203,5 +164,6 @@ ok      github.com/sonirico/parco/pkg   9.826s
 - Support for all primitive types: boolean, nil...
 - Extend interface to include version
 - Static code generation
-- Replace `encoding/binary` usage by faster implementations
+- Replace `encoding/binary` usage by faster implementations (`WriteByte`)
+- Custom `Reader` and `Writer` interfaces to implement single byte ops
 - Support for nested schema definition
