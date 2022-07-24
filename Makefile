@@ -4,11 +4,12 @@ XC_OS 	:= linux
 XC_ARCH := 386 amd64 arm
 XC_ARCH := amd64
 LD_FLAGS := -X main.version=$(VERSION) -s -w
-SOURCE_FILES ?=./internal/... ./pkg/...
+SOURCE_FILES ?=./...
 TEST_OPTIONS := -v -failfast -race
+TEST_OPTIONS := -v -failfast -race
+PROFILE_OPTIONS := -cpuprofile cpu.prof -memprofile mem.prof
 TEST_PATTERN ?=.
 BENCH_OPTIONS ?= -v -bench=. -benchmem
-BENCH_TEST_OPTIONS := -v -failfast -race
 CLEAN_OPTIONS ?=-modcache -testcache
 TEST_TIMEOUT ?=1m
 LINT_VERSION := 1.40.1
@@ -41,10 +42,9 @@ help:
 .PHONY: format
 format:
 	$(info: Make: Format)
-	@echo gofmt -w -w pkg/* internal/*
-	@gofmt -w -w pkg/* internal/*
-	@echo goimport -w pkg/* internal/*
-	@goimports -w pkg/* internal/*
+	gofmt -w ./**/*
+	goimports -w ./**/*
+	golines -w ./**/*
 
 .PHONY: lint
 lint:
@@ -54,13 +54,14 @@ lint:
 
 .PHONY: test
 test:
-	@echo CGO_ENABLED=1 go test ${TEST_OPTIONS} ${SOURCE_FILES} -run ${TEST_PATTERN} -timeout=${TEST_TIMEOUT}
-	@CGO_ENABLED=1 go test ${TEST_OPTIONS} ${SOURCE_FILES} -run ${TEST_PATTERN} -timeout=${TEST_TIMEOUT}
+	CGO_ENABLED=1 go test ${TEST_OPTIONS} ${SOURCE_FILES} -run ${TEST_PATTERN} -timeout=${TEST_TIMEOUT}
 
 .PHONY: bench
 bench:
-	@echo CGO_ENABLED=1 go test ${TEST_OPTIONS} ${BENCH_OPTIONS} ${SOURCE_FILES} -run ${TEST_PATTERN} -timeout=${TEST_TIMEOUT}
-	@CGO_ENABLED=1 go test ${BENCH_OPTIONS} ${SOURCE_FILES} -run ${TEST_PATTERN} -timeout=${TEST_TIMEOUT}
+	CGO_ENABLED=1 go test ${BENCH_OPTIONS} ${SOURCE_FILES} -run ${TEST_PATTERN} -timeout=${TEST_TIMEOUT}
 
 
-
+.PHONY: setup
+setup:
+	go install golang.org/x/tools/cmd/goimports@latest
+	go install github.com/segmentio/golines@latest

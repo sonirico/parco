@@ -1,6 +1,6 @@
-package utils
+package parco
 
-func AnyIntToInt(x interface{}) (int, bool) {
+func AnyIntToInt(x any) (int, bool) {
 	switch val := x.(type) {
 	case int:
 		return val, true
@@ -22,4 +22,8 @@ func AnyIntToInt(x interface{}) (int, bool) {
 		return int(val), true
 	}
 	return 0, false
+}
+
+func Identity[T any](x T) T {
+	return x
 }
