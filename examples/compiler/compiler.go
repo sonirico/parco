@@ -1,36 +1,33 @@
 package main
 
 import (
-	bytes "bytes"
-	types "github.com/sonirico/parco/internal"
-	parco "github.com/sonirico/parco/pkg"
+	"bytes"
 	"log"
+
+	"github.com/sonirico/parco"
 )
 
 type Example struct {
 	Greet     string
-	LifeSense int
+	LifeSense uint8
 	Grades    []uint8
 }
 
-func getGreet(x interface{}) interface{} {
-	return x.(Example).Greet
-}
-
-func getLifeSense(x interface{}) interface{} {
-	return x.(Example).LifeSense
-}
-
-func getGrades(x interface{}) interface{} {
-	return types.UInt8Iter(x.(Example).Grades)
-}
-
 func main() {
-	compiler := parco.NewBuilder().
-		FieldGet("greet", types.SmallVarchar(), getGreet).
-		FieldGet("life_sense", types.UInt8(), getLifeSense).
-		FieldGet("grades", types.Array(2, types.UInt8(), types.UInt8()), getGrades).
-		Compiler()
+	compiler := parco.NewCompiler[Example]().
+		SmallVarchar("greet", func(e Example) string {
+			return e.Greet
+		}).
+		UInt8("life_sense", func(e Example) uint8 {
+			return e.LifeSense
+		}).
+		Array("grades", parco.Array[Example, uint8](
+			parco.UInt8Header(),
+			parco.UInt8Body(),
+			func(e Example) parco.Iterable[uint8] {
+				return parco.UInt8Iter(e.Grades)
+			},
+		))
 
 	ex := Example{
 		Greet:     "hey",

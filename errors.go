@@ -1,4 +1,4 @@
-package internal
+package parco
 
 import (
 	"errors"
