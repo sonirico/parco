@@ -9,7 +9,9 @@ type (
 		pool4   sync.Pool
 		pool8   sync.Pool
 		pool256 sync.Pool
-		poolAny sync.Pool
+
+		poolAny    sync.Pool
+		poolAnyMap map[int]sync.Pool
 	}
 
 	Pooler interface {
@@ -27,12 +29,13 @@ func newSyncPool(byteSize int) sync.Pool {
 
 func NewPool() *Pool {
 	return &Pool{
-		pool1:   newSyncPool(1),
-		pool2:   newSyncPool(2),
-		pool4:   newSyncPool(4),
-		pool8:   newSyncPool(8),
-		pool256: newSyncPool(256),
-		poolAny: newSyncPool(32),
+		pool1:      newSyncPool(1),
+		pool2:      newSyncPool(2),
+		pool4:      newSyncPool(4),
+		pool8:      newSyncPool(8),
+		pool256:    newSyncPool(256),
+		poolAny:    newSyncPool(1 << 13),
+		poolAnyMap: make(map[int]sync.Pool),
 	}
 }
 
@@ -116,6 +119,20 @@ func (p *Pool) GetAny() *[]byte {
 
 func (p *Pool) PutAny(b *[]byte) {
 	p.poolAny.Put(b)
+}
+
+func (p *Pool) GetAnyMap(size int) *[]byte {
+	pool, ok := p.poolAnyMap[size]
+	if !ok {
+		pool = newSyncPool(size)
+		p.poolAnyMap[size] = pool
+	}
+	return pool.Get().(*[]byte)
+}
+
+func (p *Pool) PutAnyMap(b *[]byte) {
+	pool, _ := p.poolAnyMap[len(*b)]
+	pool.Put(b)
 }
 
 var (

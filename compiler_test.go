@@ -29,22 +29,23 @@ func fillSeq(le int) []uint16 {
 	return r
 }
 
-func newCompiler(arrLen int) Compiler[TestStruct] {
+func newCompiler(arrLen int) *ModelCompiler[TestStruct] {
 	var arrayHeadType IntType
 	if arrLen < 256 {
 		arrayHeadType = UInt8Header()
 	} else {
-		arrayHeadType = UInt16LEHeader[TestStruct]()
+		arrayHeadType = UInt16HeaderLE()
 	}
-	return NewCompiler[TestStruct]().
-		Varchar("name", func(ts TestStruct) string { return ts.Name }).
-		Varchar("str", func(ts TestStruct) string { return ts.Str }).
-		UInt16LE("num", func(ts TestStruct) uint16 { return ts.Num }).
-		Array("arr", Array[TestStruct, uint16](
+	return CompilerModel[TestStruct]().
+		Varchar(func(ts *TestStruct) string { return ts.Name }).
+		Varchar(func(ts *TestStruct) string { return ts.Str }).
+		UInt16LE(func(ts *TestStruct) uint16 { return ts.Num }).
+		Array(ArrayField[TestStruct, uint16](
 			arrayHeadType,
-			UInt16BodyLE(),
-			func(ts TestStruct) Iterable[uint16] {
-				return UInt16Iter(ts.Arr)
+			UInt16LE(),
+			nil,
+			func(ts *TestStruct) Slice[uint16] {
+				return ts.Arr
 			},
 		))
 }

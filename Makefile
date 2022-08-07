@@ -4,7 +4,7 @@ XC_OS 	:= linux
 XC_ARCH := 386 amd64 arm
 XC_ARCH := amd64
 LD_FLAGS := -X main.version=$(VERSION) -s -w
-SOURCE_FILES ?=./...
+SOURCE_FILES ?=./*.go
 TEST_OPTIONS := -v -failfast -race
 TEST_OPTIONS := -v -failfast -race
 PROFILE_OPTIONS := -cpuprofile cpu.prof -memprofile mem.prof
@@ -38,6 +38,11 @@ help:
 	@echo "make test - run go test including race detection"
 	@echo "make bench - run go test including benchmarking"
 
+
+.PHONY: build
+build:
+	$(info: Make: Build)
+	go build -gcflags='-m -m' examples/compiler/*.go
 
 .PHONY: format
 format:

@@ -1,35 +1,41 @@
 package parco
 
 import (
+	"encoding/binary"
 	"io"
 )
 
 type (
-	ModelField[T any] interface {
+	fieldParser[T any] interface {
 		Parse(item *T, reader io.Reader) error
 	}
 
-	ParserModel[T any] struct {
-		fields  []ModelField[T]
+	Parser[T any] interface {
+		Parse(io.Reader) (T, error)
+		ParseBytes([]byte) (T, error)
+	}
+
+	ModelParser[T any] struct {
+		fields  []fieldParser[T]
 		factory Factory[T]
 	}
 )
 
-func NewModelParser[T any](factory Factory[T]) ParserModel[T] {
-	return ParserModel[T]{factory: factory}
+func ParserModel[T any](factory Factory[T]) *ModelParser[T] {
+	return &ModelParser[T]{factory: factory}
 }
 
-func (p ParserModel[T]) ParseBytes(data []byte) (T, error) {
+func (p *ModelParser[T]) ParseBytes(data []byte) (T, error) {
 	buf := NewBufferCursor(data, 0)
 
 	return p.parse(&buf)
 }
 
-func (p ParserModel[T]) Parse(r io.Reader) (T, error) {
+func (p *ModelParser[T]) Parse(r io.Reader) (T, error) {
 	return p.parse(r)
 }
 
-func (p ParserModel[T]) parse(r io.Reader) (T, error) {
+func (p *ModelParser[T]) parse(r io.Reader) (T, error) {
 	model := p.factory.Get()
 
 	for _, f := range p.fields {
@@ -41,39 +47,43 @@ func (p ParserModel[T]) parse(r io.Reader) (T, error) {
 	return model, nil
 }
 
-func (p ParserModel[T]) SmallVarchar(setter Setter[T, string]) ParserModel[T] {
-	return p.register(FieldStringSetter[T](SmallVarchar[T](nil), setter))
+func (p *ModelParser[T]) Array(field fieldParser[T]) *ModelParser[T] {
+	return p.register(field)
 }
 
-//func (p ParserModel) UInt8(name string) ParserModel {
-//	return p.register(name, UInt8C[any](nil))
-//}
-//
-//func (p ParserModel) UInt16(name string, order binary.ByteOrder) ParserModel {
-//	return p.register(name, UInt16[any](order, nil))
-//}
-//
-//func (p ParserModel) UInt16BE(name string) ParserModel {
-//	return p.register(name, UInt16[any](binary.BigEndian, nil))
-//}
-//
-//func (p ParserModel) UInt16LE(name string) ParserModel {
-//	return p.register(name, UInt16[any](binary.LittleEndian, nil))
-//}
-//
-//func (p ParserModel) Array(name string, inner Type[any]) ParserModel {
-//	return p.register(name, inner)
-//}
-//
-//func (p ParserModel) Field(name string, tp Type[any]) ParserModel {
-//	return p.register(name, tp)
-//}
-//
-//func (p ParserModel) Skip(pad int) ParserModel {
-//	return p.register("", SkipType[any]{pad: pad})
-//}
+func (p *ModelParser[T]) SmallVarchar(setter Setter[T, string]) *ModelParser[T] {
+	return p.register(StringFieldSetter[T](SmallVarchar(), setter))
+}
 
-func (p ParserModel[T]) register(f ModelField[T]) ParserModel[T] {
+func (p *ModelParser[T]) Varchar(setter Setter[T, string]) *ModelParser[T] {
+	return p.register(StringFieldSetter[T](Varchar(), setter))
+}
+
+func (p *ModelParser[T]) UInt8(setter Setter[T, uint8]) *ModelParser[T] {
+	return p.register(UInt8FieldSetter[T](UInt8(), setter))
+}
+
+func (p *ModelParser[T]) UInt16(order binary.ByteOrder, setter Setter[T, uint16]) *ModelParser[T] {
+	return p.register(UInt16FieldSetter[T](UInt16(order), setter))
+}
+
+func (p *ModelParser[T]) UInt16LE(setter Setter[T, uint16]) *ModelParser[T] {
+	return p.register(UInt16FieldSetter[T](UInt16LE(), setter))
+}
+
+func (p *ModelParser[T]) UInt16BE(setter Setter[T, uint16]) *ModelParser[T] {
+	return p.register(UInt16FieldSetter[T](UInt16BE(), setter))
+}
+
+func (p *ModelParser[T]) Field(f fieldParser[T]) *ModelParser[T] {
+	return p.register(f)
+}
+
+func (p *ModelParser[T]) Skip(pad int) *ModelParser[T] {
+	return p.register(DefaultSkipField[T](pad))
+}
+
+func (p *ModelParser[T]) register(f fieldParser[T]) *ModelParser[T] {
 	p.fields = append(p.fields, f)
 	return p
 }

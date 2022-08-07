@@ -1,65 +1,90 @@
 package parco
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"io"
+)
 
 type (
-	field[T any] struct {
-		Type Type[T]
-		Name string
+	fieldBuilder[T any] interface {
+		fieldCompiler[T]
+		fieldParser[T]
 	}
 
-	structItem[T any] struct {
-		data  []byte
-		value any
-		field field[T]
-	}
+	ModelBuilder[T any] struct {
+		fields []fieldBuilder[T]
 
-	getter[T, U any] func(T) U
-	setter[T, U any] func(*T, U)
+		parser *ModelParser[T]
 
-	Builder[T any] struct {
-		fields []field[T]
+		compiler *ModelCompiler[T]
 	}
 )
 
-func (b Builder[T]) SmallVarchar(name string, getter getter[T, string]) Builder[T] {
-	return b.register(name, SmallVarchar[T](getter))
+func (b ModelBuilder[T]) Compile(value T, w io.Writer) error {
+	for _, f := range b.fields {
+		if err := f.Compile(&value, w); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func (b Builder[T]) UInt8(name string, getter getter[T, uint8]) Builder[T] {
-	return b.register(name, UInt8C[T](getter))
+func Builder[T any](factory Factory[T]) ModelBuilder[T] {
+	return ModelBuilder[T]{
+		parser:   ParserModel(factory),
+		compiler: CompilerModel[T](),
+	}
 }
 
-func (b Builder[T]) UInt16(name string, order binary.ByteOrder, getter getter[T, uint16]) Builder[T] {
-	return b.register(name, UInt16[T](order, getter))
+func (b ModelBuilder[T]) ParCo() (Parser[T], Compiler[T]) {
+	return b.parser, b.compiler
 }
 
-func (b Builder[T]) UInt16BE(name string, getter getter[T, uint16]) Builder[T] {
-	return b.register(name, UInt16[T](binary.BigEndian, getter))
-}
-
-func (b Builder[T]) UInt16LE(name string, getter getter[T, uint16]) Builder[T] {
-	return b.register(name, UInt16[T](binary.LittleEndian, getter))
-}
-
-func (b Builder[T]) Field(name string, tp Type[T]) Builder[T] {
-	return b.register(name, tp)
-}
-
-func (b Builder[T]) Skip(pad int) Builder[T] {
-	return b.register("", SkipType[T]{pad: pad})
-}
-
-func (b Builder[T]) register(name string, tp Type[T]) Builder[T] {
-	b.fields = append(b.fields, field[T]{Name: name, Type: tp})
+func (b ModelBuilder[T]) Array(field fieldBuilder[T]) ModelBuilder[T] {
+	b.parser.Array(field)
+	b.compiler.Array(field)
 	return b
 }
 
-func (b Builder[T]) Compiler() Compiler[T] {
-	return Compiler[T]{fields: b.fields}
+func (b ModelBuilder[T]) Varchar(getter Getter[T, string], setter Setter[T, string]) ModelBuilder[T] {
+	b.parser.Varchar(setter)
+	b.compiler.Varchar(getter)
+	return b
 }
 
-func NewBuilder[T any]() Builder[T] {
-	// parser/compiler factories
-	return Builder[T]{}
+func (b ModelBuilder[T]) SmallVarchar(getter Getter[T, string], setter Setter[T, string]) ModelBuilder[T] {
+	b.parser.SmallVarchar(setter)
+	b.compiler.SmallVarchar(getter)
+	return b
+}
+
+func (b ModelBuilder[T]) UInt8(getter Getter[T, uint8], setter Setter[T, uint8]) ModelBuilder[T] {
+	b.parser.UInt8(setter)
+	b.compiler.UInt8(getter)
+	return b
+}
+
+func (b ModelBuilder[T]) UInt16(order binary.ByteOrder, getter Getter[T, uint16], setter Setter[T, uint16]) ModelBuilder[T] {
+	b.parser.UInt16(order, setter)
+	b.compiler.UInt16(order, getter)
+	return b
+}
+
+func (b ModelBuilder[T]) UInt16LE(getter Getter[T, uint16], setter Setter[T, uint16]) ModelBuilder[T] {
+	b.parser.UInt16LE(setter)
+	b.compiler.UInt16LE(getter)
+	return b
+}
+
+func (b ModelBuilder[T]) UInt16BE(getter Getter[T, uint16], setter Setter[T, uint16]) ModelBuilder[T] {
+	b.parser.UInt16BE(setter)
+	b.compiler.UInt16BE(getter)
+	return b
+}
+
+func (b ModelBuilder[T]) Field(f fieldBuilder[T]) ModelBuilder[T] {
+	b.parser.Field(f)
+	b.compiler.Field(f)
+	return b
 }

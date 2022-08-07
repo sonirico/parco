@@ -7,6 +7,9 @@ type BufferCursor struct {
 
 func (b *BufferCursor) Read(box []byte) (int, error) {
 	to := b.cursor + len(box)
+	if to > len(b.data) {
+		return 0, ErrCannotRead
+	}
 	copy(box, b.data[b.cursor:to])
 	b.cursor = to
 	return len(box), nil
