@@ -1,11 +1,16 @@
-package internal
+package parco
 
 import (
 	"errors"
 	"fmt"
 )
 
-var ErrNotIntegerType = errors.New("not an integer type")
+var (
+	ErrNotIntegerType = errors.New("not an integer type")
+	ErrOverflow       = errors.New("bytes overflow")
+	ErrCannotRead     = errors.New("unsufficient bytes read")
+	ErrCannotWrite    = errors.New("unsufficient bytes written")
+)
 
 type ErrUnSufficientBytes struct {
 	want int

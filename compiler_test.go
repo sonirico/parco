@@ -1,14 +1,13 @@
-package pkg
+package parco
 
 import (
-	bytes "bytes"
+	"bytes"
 	"encoding/json"
+	"github.com/vmihailenco/msgpack/v5"
 	"math"
 	"math/rand"
 	"strings"
 	"testing"
-
-	types "github.com/sonirico/parco/internal"
 )
 
 type compileFuncType func(t TestStruct) (int, error)
@@ -18,20 +17,8 @@ type compileFuncFactory func(t TestStruct) compileFuncType
 type TestStruct struct {
 	Name string
 	Str  string   `json:"str"`
-	Num  int      `json:"num"`
+	Num  uint16   `json:"num"`
 	Arr  []uint16 `json:"arr"`
-}
-
-func getStr(x interface{}) interface{} {
-	return x.(TestStruct).Str
-}
-
-func getNum(x interface{}) interface{} {
-	return x.(TestStruct).Num
-}
-
-func getArr(x interface{}) interface{} {
-	return types.UInt16Iter(x.(TestStruct).Arr)
 }
 
 func fillSeq(le int) []uint16 {
@@ -42,18 +29,25 @@ func fillSeq(le int) []uint16 {
 	return r
 }
 
-func newCompiler(arrLen int) Compiler {
-	var arrayHeadType types.Type
+func newCompiler(arrLen int) *ModelCompiler[TestStruct] {
+	var arrayHeadType IntType
 	if arrLen < 256 {
-		arrayHeadType = types.UInt8()
+		arrayHeadType = UInt8Header()
 	} else {
-		arrayHeadType = types.UInt16LE()
+		arrayHeadType = UInt16HeaderLE()
 	}
-	return NewBuilder().
-		FieldGet("str", types.Varchar(types.UInt16LE()), getStr).
-		FieldGet("num", types.UInt16LE(), getNum).
-		FieldGet("arr", types.Array(arrLen, arrayHeadType, types.UInt16LE()), getArr).
-		Compiler()
+	return CompilerModel[TestStruct]().
+		Varchar(func(ts *TestStruct) string { return ts.Name }).
+		Varchar(func(ts *TestStruct) string { return ts.Str }).
+		UInt16LE(func(ts *TestStruct) uint16 { return ts.Num }).
+		Array(ArrayField[TestStruct, uint16](
+			arrayHeadType,
+			UInt16LE(),
+			nil,
+			func(ts *TestStruct) Slice[uint16] {
+				return ts.Arr
+			},
+		))
 }
 
 var tests = []TestStruct{
@@ -84,12 +78,30 @@ func jsonCompilerFactory(_ TestStruct) compileFuncType {
 	}
 }
 
+func msgPackCompilerFactory(_ TestStruct) compileFuncType {
+	return func(t TestStruct) (int, error) {
+		bts, err := msgpack.Marshal(t)
+		return len(bts), err
+	}
+}
+
 func parcoCompilerFactory(t TestStruct) compileFuncType {
 	compiler := newCompiler(len(t.Arr))
+	buf := bytes.NewBuffer(nil)
 	return func(ts TestStruct) (int, error) {
-		buf := bytes.NewBuffer(nil)
+		defer buf.Reset()
 		err := compiler.Compile(t, buf)
 		return buf.Len(), err
+	}
+}
+
+func parcoDiscardCompilerFactory(t TestStruct) compileFuncType {
+	compiler := newCompiler(len(t.Arr))
+	w := new(discard)
+	return func(ts TestStruct) (int, error) {
+		defer w.Reset()
+		err := compiler.Compile(t, w)
+		return w.Size(), err
 	}
 }
 
@@ -111,10 +123,18 @@ func benchmarkCompile(b *testing.B, tests []TestStruct, compileFuncFactory compi
 	}
 }
 
-func BenchmarkParco_Compile(b *testing.B) {
+func BenchmarkParcoAlloc_Compile(b *testing.B) {
 	benchmarkCompile(b, tests, parcoCompilerFactory)
+}
+
+func BenchmarkParcoDiscard_Compile(b *testing.B) {
+	benchmarkCompile(b, tests, parcoDiscardCompilerFactory)
 }
 
 func BenchmarkJson_Compile(b *testing.B) {
 	benchmarkCompile(b, tests, jsonCompilerFactory)
+}
+
+func BenchmarkMsgpack_Compile(b *testing.B) {
+	benchmarkCompile(b, tests, msgPackCompilerFactory)
 }
