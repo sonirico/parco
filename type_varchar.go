@@ -1,72 +1,87 @@
 package parco
 
 import (
+	"encoding/binary"
 	"io"
 )
 
-type VarcharType[T any] struct {
-	head   IntType
-	getter getter[T, string]
-	pooler Pooler
-}
-
-func (v VarcharType[T]) Length() int {
-	return v.head.Length()
-}
-
-func (v VarcharType[T]) Compile(item T, w io.Writer) (err error) {
-	x := v.getter(item)
-	return v.CompileString(x, w)
-}
-
-func (v VarcharType[T]) CompileString(x string, w io.Writer) (err error) {
-	bites := String2Bytes(x)
-	// TODO: Check whether header type and actual value do not overflow
-
-	if err = v.head.CompileInt(len(bites), w); err != nil {
-		return err
+func Blob(header IntType) Type[[]byte] {
+	return varType[[]byte]{
+		header:   header,
+		sizer:    SizerFunc[[]byte](func(x []byte) int { return len(x) }),
+		pool:     SinglePool,
+		parser:   ParseBlob,
+		compiler: CompileBlob,
 	}
-	_, err = w.Write(bites)
-	return err
 }
 
-func (v VarcharType[T]) Parse(r io.Reader) (res any, err error) {
-	return v.ParseString(r)
+func NewVarcharType(header IntType) Type[string] {
+	return varType[string]{
+		header:   header,
+		sizer:    SizerFunc[string](func(x string) int { return len(x) }),
+		pool:     SinglePool,
+		parser:   ParseStringFactory(),
+		compiler: CompileStringWriter,
+	}
 }
 
-func (v VarcharType[T]) ParseString(r io.Reader) (res string, err error) {
-	length, err := v.head.ParseInt(r)
-	if err != nil {
-		return
+func SmallVarchar() Type[string] {
+	return NewVarcharType(UInt8Header())
+}
+
+func Varchar() Type[string] {
+	return NewVarcharType(UInt16HeaderLE())
+}
+
+func VarcharOrder(order binary.ByteOrder) Type[string] {
+	return NewVarcharType(UInt16Header(order))
+}
+
+func ParseStringFactory() ParserFunc[string] {
+	return func(data []byte) (string, error) {
+		return ParseString(data)
 	}
+}
 
-	b := v.pooler.Get(length)
-	defer v.pooler.Put(b)
-	data := *b
-	data = data[:length]
+func ParseString(data []byte) (res string, err error) {
+	return string(data), nil
+}
 
-	if _, err = r.Read(data); err != nil {
-		return
+func CompileStringWriter(x string, w io.Writer) (err error) {
+	var written int
+	data := String2Bytes(x)
+	written, err = w.Write(data)
+	if written != len(x) {
+		err = ErrCannotWrite
 	}
-
-	res = Bytes2String(data)
 	return
 }
 
-// Varchar handles strings up to 65535 bytes
-func Varchar[T any](getter getter[T, string]) VarcharType[T] {
-	return VarcharType[T]{
-		getter: getter,
-		pooler: SinglePool,
-		head:   UInt16LEHeader[int](),
+func CompileString(x string, box []byte) (err error) {
+	bites := String2Bytes(x)
+
+	if copy(box, bites) != len(bites) {
+		return ErrCannotWrite
+	}
+
+	return
+}
+
+func CompileStringFactory() CompilerFunc[string] {
+	return func(s string, box []byte) error {
+		return CompileString(s, box)
 	}
 }
 
-// SmallVarchar handles strings up to 255 bytes
-func SmallVarchar[T any](getter getter[T, string]) VarcharType[T] {
-	return VarcharType[T]{
-		getter: getter,
-		pooler: SinglePool,
-		head:   UInt8Header(),
+func ParseBlob(data []byte) ([]byte, error) {
+	return data, nil
+}
+
+func CompileBlob(x []byte, w io.Writer) (err error) {
+	var written int
+	written, err = w.Write(x)
+	if written != len(x) {
+		err = ErrCannotWrite
 	}
+	return
 }

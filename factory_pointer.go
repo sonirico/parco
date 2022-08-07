@@ -2,9 +2,17 @@ package parco
 
 import "sync"
 
-type Factory[T any] interface {
-	Get() T
-}
+type (
+	Factory[T any] interface {
+		Get() T
+	}
+
+	PoolFactory[T any] interface {
+		Factory[T]
+
+		Put(T)
+	}
+)
 
 type FuncFactory[T any] func() T
 
@@ -30,7 +38,7 @@ func (f NativePooledFactory[T]) Put(t T) {
 	f.inner.Put(t)
 }
 
-func PooledFactory[T any](inner Factory[T]) NativePooledFactory[T] {
+func PooledFactory[T any](inner Factory[T]) PoolFactory[T] {
 	return NativePooledFactory[T]{
 		inner: sync.Pool{New: func() any {
 			return inner.Get()
