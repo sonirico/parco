@@ -10,8 +10,8 @@ import (
 type Example struct {
 	Greet     string
 	LifeSense uint8
-	Grades    []uint8
 	Friends   []string
+	Grades    map[string]uint8
 }
 
 func main() {
@@ -23,15 +23,6 @@ func main() {
 			return e.LifeSense
 		}).
 		Array(
-			parco.ArrayFieldGetter[Example, uint8](
-				parco.UInt8Header(), // up to 255 items
-				parco.UInt8(),       // each item
-				func(e *Example) parco.Slice[uint8] {
-					return e.Grades
-				},
-			),
-		).
-		Array(
 			parco.ArrayFieldGetter[Example, string](
 				parco.UInt8Header(),  // up to 255 items
 				parco.SmallVarchar(), // each item
@@ -39,13 +30,26 @@ func main() {
 					return e.Friends
 				},
 			),
+		).
+		Map(
+			parco.MapFieldGetter[Example, string, uint8](
+				parco.UInt8Header(),  // up to 255 items
+				parco.SmallVarchar(), // key type
+				parco.UInt8(),        // value type
+				func(e *Example) map[string]uint8 {
+					return e.Grades
+				},
+			),
 		)
 
 	ex := Example{
 		Greet:     "hey",
 		LifeSense: 42,
-		Grades:    []uint8{5, 6},
-		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
+		Grades: map[string]uint8{
+			"math":    5,
+			"english": 6,
+		},
+		Friends: []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
 	}
 
 	output := bytes.NewBuffer(nil)

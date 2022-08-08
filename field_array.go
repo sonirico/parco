@@ -9,7 +9,6 @@ type (
 		inner  ArrayType[U]
 		setter Setter[T, Slice[U]]
 		getter Getter[T, Slice[U]]
-		pooler Pooler
 	}
 )
 
@@ -42,7 +41,6 @@ func ArrayField[T, U any](
 		inner:  NewArrayType[U](header, inner),
 		setter: setter,
 		getter: getter,
-		pooler: SinglePool,
 	}
 }
 

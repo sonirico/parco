@@ -11,171 +11,89 @@ addition to have an appositive effect on performance.
 
 ## Usage
 
-#### Parser
-
-```go
-type Student struct {
-    Name   string
-    Age    uint8
-    Grades []uint8
-}
-
-data := []byte{4, 72, 79, 76, 65, 42, 2, 9, 10}
-
-studentFactory := parco.ObjectFactory[Student]()
-
-parser := parco.ParserModel[Student](studentFactory).
-    SmallVarchar(func(s *Student, name string) {
-        s.Name = name
-    }).
-    UInt8(func(s *Student, age uint8) {
-        s.Age = age
-    }).
-    Array(parco.ArrayFieldSetter(
-        parco.UInt8Header(), // up to 255 items in the array
-        parco.UInt8(), // type of the array
-        func(s *Student, items parco.Slice[uint8]) {
-            s.Grades = items
-        },
-    ))
-
-parsed, err := parser.ParseBytes(data)
-
-if err != nil {
-    log.Fatal(err)
-}
-
-log.Println(parsed.Name)
-log.Println(parsed.Age)
-log.Println(parsed.Grades)
-
-```
-
-#### Compiler
 
 ```go
 type Example struct {
     Greet     string
     LifeSense uint8
-    Grades    []uint8
     Friends   []string
+    Grades    map[string]uint8
 }
 
-compiler := parco.CompilerModel[Example]().
-    SmallVarchar(func(e *Example) string {
-        return e.Greet
-    }).
-    UInt8(func(e *Example) uint8 {
-        return e.LifeSense
-    }).
-    Array(
-        parco.ArrayFieldGetter[Example, uint8](
-            parco.UInt8Header(), // up to 255 items
-            parco.UInt8(),       // each item
-            func(e *Example) parco.Slice[uint8] {
-                return e.Grades
-            },
-        ),
-    ).
-    Array(
-        parco.ArrayFieldGetter[Example, string](
-            parco.UInt8Header(),  // up to 255 items
-            parco.SmallVarchar(), // each item
-            func(e *Example) parco.Slice[string] {
-                return e.Friends
-            }, 
-        ), 
-    )
-
-ex := Example{
-    Greet:     "hey",
-    LifeSense: 42,
-    Grades:    []uint8{5, 6},
-    Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
+func (e Example) Equals(other Example) bool {
+    return reflect.DeepEqual(e, other)
 }
 
-output := bytes.NewBuffer(nil)
-if err := compiler.Compile(ex, output); err != nil {
-    log.Fatal(err)
-}
+func main() {
+    exampleFactory := parco.ObjectFactory[Example]()
+	
+    parser, compiler := parco.Builder[Example](exampleFactory).
+		SmallVarchar(
+			func(e *Example) string {
+				return e.Greet
+			},
+			func(e *Example, s string) {
+				e.Greet = s
+			},
+		).
+		UInt8(
+			func(e *Example) uint8 {
+				return e.LifeSense
+			},
+			func(e *Example, lifeSense uint8) {
+				e.LifeSense = lifeSense
+			},
+		).
+		Map(
+			parco.MapField[Example, string, uint8](
+				parco.UInt8Header(),
+				parco.SmallVarchar(),
+				parco.UInt8(),
+				func(s *Example, grades map[string]uint8) {
+					s.Grades = grades
+				},
+				func(s *Example) map[string]uint8 {
+					return s.Grades
+				},
+			),
+		).
+		Array(
+			parco.ArrayField[Example, string](
+				parco.UInt8Header(),  // up to 255 items
+				parco.SmallVarchar(), // each item's type
+				func(e *Example, friends parco.Slice[string]) {
+					e.Friends = friends
+				},
+				func(e *Example) parco.Slice[string] {
+					return e.Friends
+				},
+			),
+		).
+		ParCo()
 
-log.Println(output.Bytes())
+	ex := Example{
+		Greet:     "hey",
+		LifeSense: 42,
+		Grades:    map[string]uint8{"math": 5, "english": 6},
+		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
+	}
 
-```
+	output := bytes.NewBuffer(nil)
+	if err := compiler.Compile(ex, output); err != nil {
+		log.Fatal(err)
+	}
 
+	log.Println(output.Bytes())
 
-#### Builder
+	parsed, err := parser.ParseBytes(output.Bytes())
 
-Both parser and compiler can be defined at the same time:
+	if err != nil {
+		log.Fatal(err)
+	}
 
-```go
-exampleFactory := parco.ObjectFactory[Example]()
-
-parser, compiler := parco.Builder[Example](exampleFactory).
-    SmallVarchar(
-        func(e *Example) string {
-            return e.Greet
-        },
-        func(e *Example, s string) {
-            e.Greet = s
-        },
-    ).
-    UInt8(
-        func(e *Example) uint8 {
-            return e.LifeSense
-        },
-        func(e *Example, lifeSense uint8) {
-            e.LifeSense = lifeSense
-        },
-    ).
-    Array(
-        parco.ArrayField[Example, uint8](
-            parco.UInt8Header(), // up to 255 items
-            parco.UInt8(),       // each item's type
-            func(e *Example, grades parco.Slice[uint8]) {
-                e.Grades = grades
-            },
-            func(e *Example) parco.Slice[uint8] {
-                return e.Grades
-            },
-        ),
-    ).
-    Array(
-        parco.ArrayField[Example, string](
-            parco.UInt8Header(),  // up to 255 items
-            parco.SmallVarchar(), // each item's type
-            func(e *Example, friends parco.Slice[string]) {
-                e.Friends = friends
-            },
-            func(e *Example) parco.Slice[string] {
-                return e.Friends
-            },
-        ),
-    ).
-    ParCo()
-
-ex := Example{
-    Greet:     "hey",
-    LifeSense: 42,
-    Grades:    []uint8{5, 6},
-    Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
-}
-
-output := bytes.NewBuffer(nil)
-if err := compiler.Compile(ex, output); err != nil {
-    log.Fatal(err)
-}
-
-log.Println(output.Bytes())
-
-parsed, err := parser.ParseBytes(output.Bytes())
-
-if err != nil {
-    log.Fatal(err)
-}
-
-if !ex.Equals(parsed) {
-    panic("not equals")
+	if !ex.Equals(parsed) {
+		panic("not equals")
+	}
 }
 ```
 
@@ -190,35 +108,35 @@ make bench
 goos: linux
 goarch: amd64
 cpu: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
-BenchmarkParcoAlloc_Compile
-BenchmarkParcoAlloc_Compile/small_size
-BenchmarkParcoAlloc_Compile/small_size-12                1627336               771.7 ns/op              47.00 payload_bytes/op       184 B/op          3 allocs/op
-BenchmarkParcoAlloc_Compile/medium_size
-BenchmarkParcoAlloc_Compile/medium_size-12                299202              3812 ns/op               338.0 payload_bytes/op        184 B/op          3 allocs/op
-BenchmarkParcoAlloc_Compile/large_size
-BenchmarkParcoAlloc_Compile/large_size-12                  34354             35841 ns/op              3218 payload_bytes/op          184 B/op          3 allocs/op
-BenchmarkParcoDiscard_Compile
-BenchmarkParcoDiscard_Compile/small_size
-BenchmarkParcoDiscard_Compile/small_size-12              1625402               704.0 ns/op              47.00 payload_bytes/op       184 B/op          3 allocs/op
-BenchmarkParcoDiscard_Compile/medium_size
-BenchmarkParcoDiscard_Compile/medium_size-12              353724              3478 ns/op               338.0 payload_bytes/op        184 B/op          3 allocs/op
-BenchmarkParcoDiscard_Compile/large_size
-BenchmarkParcoDiscard_Compile/large_size-12                39127             31379 ns/op              3218 payload_bytes/op          184 B/op          3 allocs/op
-BenchmarkJson_Compile
-BenchmarkJson_Compile/small_size
-BenchmarkJson_Compile/small_size-12                      1935265               690.0 ns/op             116.0 payload_bytes/op        192 B/op          2 allocs/op
-BenchmarkJson_Compile/medium_size
-BenchmarkJson_Compile/medium_size-12                      367641              3206 ns/op               756.0 payload_bytes/op        832 B/op          2 allocs/op
-BenchmarkJson_Compile/large_size
-BenchmarkJson_Compile/large_size-12                        42553             28492 ns/op              7071 payload_bytes/op         8262 B/op          2 allocs/op
-BenchmarkMsgpack_Compile
-BenchmarkMsgpack_Compile/small_size
-BenchmarkMsgpack_Compile/small_size-12                   1296073               918.7 ns/op              74.00 payload_bytes/op       320 B/op          4 allocs/op
-BenchmarkMsgpack_Compile/medium_size
-BenchmarkMsgpack_Compile/medium_size-12                   237603              4778 ns/op               458.0 payload_bytes/op        944 B/op          5 allocs/op
-BenchmarkMsgpack_Compile/large_size
-BenchmarkMsgpack_Compile/large_size-12                     28405             40949 ns/op              4238 payload_bytes/op         9651 B/op          6 allocs/op
 
+ParcoAlloc_Compile
+ParcoAlloc_Compile/small_size
+ParcoAlloc_Compile/small_size-12                 674432              1777 ns/op                78.00 payload_bytes/op       200 B/op          3 allocs/op
+ParcoAlloc_Compile/medium_size
+ParcoAlloc_Compile/medium_size-12                 87168             13190 ns/op               729.0 payload_bytes/op        200 B/op          3 allocs/op
+ParcoAlloc_Compile/large_size
+ParcoAlloc_Compile/large_size-12                   8985            136822 ns/op              8110 payload_bytes/op          200 B/op          3 allocs/op
+ParcoDiscard_Compile
+ParcoDiscard_Compile/small_size
+ParcoDiscard_Compile/small_size-12               661446              1656 ns/op                78.00 payload_bytes/op       200 B/op          3 allocs/op
+ParcoDiscard_Compile/medium_size
+ParcoDiscard_Compile/medium_size-12               93610             14262 ns/op               729.0 payload_bytes/op        200 B/op          3 allocs/op
+ParcoDiscard_Compile/large_size
+ParcoDiscard_Compile/large_size-12                 9838            115526 ns/op              8110 payload_bytes/op          200 B/op          3 allocs/op
+Json_Compile
+Json_Compile/small_size
+Json_Compile/small_size-12                       378963              2948 ns/op               200.0 payload_bytes/op       1234 B/op         26 allocs/op
+Json_Compile/medium_size
+Json_Compile/medium_size-12                       42246             30289 ns/op              1610 payload_bytes/op        10241 B/op        206 allocs/op
+Json_Compile/large_size
+Json_Compile/large_size-12                         3187            343736 ns/op             16528 payload_bytes/op       101227 B/op       2006 allocs/op
+Msgpack_Compile
+Msgpack_Compile/small_size
+Msgpack_Compile/small_size-12                    487891              2525 ns/op               119.0 payload_bytes/op        490 B/op         24 allocs/op
+Msgpack_Compile/medium_size
+Msgpack_Compile/medium_size-12                    55425             19528 ns/op               955.0 payload_bytes/op       4053 B/op        207 allocs/op
+Msgpack_Compile/large_size
+Msgpack_Compile/large_size-12                      6274            191314 ns/op             10135 payload_bytes/op        37432 B/op       2007 allocs/op
 ```
 
 ## TODO

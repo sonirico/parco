@@ -37,6 +37,10 @@ func (c *ModelCompiler[T]) Array(field fieldCompiler[T]) *ModelCompiler[T] {
 	return c.register(field)
 }
 
+func (c *ModelCompiler[T]) Map(field fieldCompiler[T]) *ModelCompiler[T] {
+	return c.register(field)
+}
+
 func (c *ModelCompiler[T]) Varchar(getter Getter[T, string]) *ModelCompiler[T] {
 	return c.register(StringFieldGetter[T](Varchar(), getter))
 }

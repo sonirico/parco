@@ -51,6 +51,10 @@ func (p *ModelParser[T]) Array(field fieldParser[T]) *ModelParser[T] {
 	return p.register(field)
 }
 
+func (p *ModelParser[T]) Map(field fieldParser[T]) *ModelParser[T] {
+	return p.register(field)
+}
+
 func (p *ModelParser[T]) SmallVarchar(setter Setter[T, string]) *ModelParser[T] {
 	return p.register(StringFieldSetter[T](SmallVarchar(), setter))
 }

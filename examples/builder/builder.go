@@ -11,8 +11,8 @@ import (
 type Example struct {
 	Greet     string
 	LifeSense uint8
-	Grades    []uint8
 	Friends   []string
+	Grades    map[string]uint8
 }
 
 func (e Example) Equals(other Example) bool {
@@ -39,15 +39,16 @@ func main() {
 				e.LifeSense = lifeSense
 			},
 		).
-		Array(
-			parco.ArrayField[Example, uint8](
-				parco.UInt8Header(), // up to 255 items
-				parco.UInt8(),       // each item's type
-				func(e *Example, grades parco.Slice[uint8]) {
-					e.Grades = grades
+		Map(
+			parco.MapField[Example, string, uint8](
+				parco.UInt8Header(),
+				parco.SmallVarchar(),
+				parco.UInt8(),
+				func(s *Example, grades map[string]uint8) {
+					s.Grades = grades
 				},
-				func(e *Example) parco.Slice[uint8] {
-					return e.Grades
+				func(s *Example) map[string]uint8 {
+					return s.Grades
 				},
 			),
 		).
@@ -68,7 +69,7 @@ func main() {
 	ex := Example{
 		Greet:     "hey",
 		LifeSense: 42,
-		Grades:    []uint8{5, 6},
+		Grades:    map[string]uint8{"math": 5, "english": 6},
 		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
 	}
 

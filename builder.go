@@ -41,6 +41,12 @@ func (b ModelBuilder[T]) ParCo() (Parser[T], Compiler[T]) {
 	return b.parser, b.compiler
 }
 
+func (b ModelBuilder[T]) Map(field fieldBuilder[T]) ModelBuilder[T] {
+	b.parser.Map(field)
+	b.compiler.Map(field)
+	return b
+}
+
 func (b ModelBuilder[T]) Array(field fieldBuilder[T]) ModelBuilder[T] {
 	b.parser.Array(field)
 	b.compiler.Array(field)

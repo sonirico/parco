@@ -7,35 +7,54 @@ import (
 	"github.com/sonirico/parco"
 )
 
-type Student struct {
-	Name   string
-	Age    uint8
-	Grades []uint8
+var (
+	data = []byte{
+		3, 104, 101, 121, 42, 4, 7, 64, 98, 111, 108, 105, 114, 105, 8, 64, 100, 97, 110, 105, 114, 111, 100, 9, 64, 101,
+		110, 114, 105, 103, 108, 101, 115, 4, 64, 102, 51, 114, 2, 7, 101, 110, 103, 108, 105, 115, 104, 6, 4, 109, 97,
+		116, 104, 5,
+	}
+)
+
+type Example struct {
+	Greet     string
+	LifeSense uint8
+	Friends   []string
+	Grades    map[string]uint8
 }
 
-func newParser(factory parco.Factory[Student]) *parco.ModelParser[Student] {
-	return parco.ParserModel[Student](factory).
-		SmallVarchar(func(s *Student, name string) {
-			s.Name = name
+func newParser(factory parco.Factory[Example]) *parco.ModelParser[Example] {
+	return parco.ParserModel[Example](factory).
+		SmallVarchar(func(s *Example, greet string) {
+			s.Greet = greet
 		}).
-		UInt8(func(s *Student, age uint8) {
-			s.Age = age
+		UInt8(func(s *Example, lifeSense uint8) {
+			s.LifeSense = lifeSense
 		}).
-		Array(parco.ArrayFieldSetter(
-			parco.UInt8Header(),
-			parco.UInt8(),
-			func(s *Student, items parco.Slice[uint8]) {
-				s.Grades = items
-			},
-		))
+		Array(
+			parco.ArrayFieldSetter(
+				parco.UInt8Header(),
+				parco.SmallVarchar(),
+				func(s *Example, friends parco.Slice[string]) {
+					s.Friends = friends
+				},
+			),
+		).
+		Map(
+			parco.MapFieldSetter[Example, string, uint8](
+				parco.UInt8Header(),
+				parco.SmallVarchar(),
+				parco.UInt8(),
+				func(s *Example, grades map[string]uint8) {
+					s.Grades = grades
+				},
+			),
+		)
 }
 
-func parseBytes() {
-	data := []byte{4, 72, 79, 76, 65, 42, 2, 9, 10}
+func parseBytes(data []byte) {
+	exampleFactory := parco.ObjectFactory[Example]()
 
-	studentFactory := parco.ObjectFactory[Student]()
-
-	parser := newParser(studentFactory)
+	parser := newParser(exampleFactory)
 
 	parsed, err := parser.ParseBytes(data)
 
@@ -43,56 +62,55 @@ func parseBytes() {
 		log.Fatal(err)
 	}
 
-	log.Println(parsed.Name)
-	log.Println(parsed.Age)
+	log.Println(parsed.Greet)
+	log.Println(parsed.LifeSense)
+	log.Println(parsed.Friends)
 	log.Println(parsed.Grades)
 }
 
-func parseStream() {
-	data := []byte{4, 72, 79, 76, 65, 42, 2, 9, 10}
+func parseStream(data []byte) {
+	exampleFactory := parco.ObjectFactory[Example]()
+	parser := newParser(exampleFactory)
 
-	studentFactory := parco.ObjectFactory[Student]()
-	parser := newParser(studentFactory)
-
-	student, err := parser.Parse(bytes.NewBuffer(data))
+	parsed, err := parser.Parse(bytes.NewBuffer(data))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println(student.Name)
-	log.Println(student.Age)
-	log.Println(student.Grades)
-
+	log.Println(parsed.Greet)
+	log.Println(parsed.LifeSense)
+	log.Println(parsed.Friends)
+	log.Println(parsed.Grades)
 }
 
-func parseWithPool() {
-	data := []byte{4, 72, 79, 76, 65, 42, 2, 9, 10}
-
-	studentFactory := parco.PooledFactory[Student](
-		parco.ObjectFactory[Student](),
+func parseWithPool(data []byte) {
+	exampleFactory := parco.PooledFactory[Example](
+		parco.ObjectFactory[Example](),
 	)
 
-	parser := newParser(studentFactory)
+	parser := newParser(exampleFactory)
 
-	student, err := parser.Parse(bytes.NewBuffer(data))
+	parsed, err := parser.Parse(bytes.NewBuffer(data))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println(student.Name)
-	log.Println(student.Age)
-	log.Println(student.Grades)
+	log.Println(parsed.Greet)
+	log.Println(parsed.LifeSense)
+	log.Println(parsed.Friends)
+	log.Println(parsed.Grades)
+
 	// DO some work
 	// ....
 
 	// Release model
-	studentFactory.Put(student)
+	exampleFactory.Put(parsed)
 }
 
 func main() {
-	parseWithPool()
-	parseBytes()
-	parseStream()
+	parseWithPool(data)
+	parseBytes(data)
+	parseStream(data)
 }

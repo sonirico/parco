@@ -6,6 +6,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 	"math"
 	"math/rand"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -16,15 +17,24 @@ type compileFuncFactory func(t TestStruct) compileFuncType
 
 type TestStruct struct {
 	Name string
-	Str  string   `json:"str"`
-	Num  uint16   `json:"num"`
-	Arr  []uint16 `json:"arr"`
+	Str  string           `json:"str"`
+	Num  uint16           `json:"num"`
+	Arr  []uint16         `json:"arr"`
+	Map  map[string]uint8 `json:"map"`
 }
 
 func fillSeq(le int) []uint16 {
 	r := make([]uint16, le)
 	for i := 0; i < le; i++ {
 		r[i] = uint16(rand.Intn(math.MaxUint16))
+	}
+	return r
+}
+
+func fillMap(le int) map[string]uint8 {
+	r := make(map[string]uint8, le)
+	for i := 0; i < le; i++ {
+		r[strconv.FormatInt(int64(i), 10)] = uint8(rand.Intn(math.MaxUint8))
 	}
 	return r
 }
@@ -47,6 +57,15 @@ func newCompiler(arrLen int) *ModelCompiler[TestStruct] {
 			func(ts *TestStruct) Slice[uint16] {
 				return ts.Arr
 			},
+		)).
+		Map(MapField[TestStruct, string, uint8](
+			arrayHeadType,
+			SmallVarchar(),
+			UInt8(),
+			nil,
+			func(ts *TestStruct) map[string]uint8 {
+				return ts.Map
+			},
 		))
 }
 
@@ -56,18 +75,21 @@ var tests = []TestStruct{
 		Str:  "oh hi Mark",
 		Num:  42,
 		Arr:  fillSeq(10),
+		Map:  fillMap(10),
 	},
 	{
 		Name: "medium size",
 		Str:  strings.Repeat("oh hi Mark! ", 10),
 		Num:  42134,
 		Arr:  fillSeq(100),
+		Map:  fillMap(100),
 	},
 	{
 		Name: "large size",
 		Str:  strings.Repeat("oh hi Mark! ", 100),
 		Num:  math.MaxUint16,
 		Arr:  fillSeq(1000),
+		Map:  fillMap(1000),
 	},
 }
 
