@@ -21,6 +21,7 @@ type TestStruct struct {
 	Num  uint16           `json:"num"`
 	Arr  []uint16         `json:"arr"`
 	Map  map[string]uint8 `json:"map"`
+	Bool bool             `json:"bool"`
 }
 
 func fillSeq(le int) []uint16 {
@@ -76,6 +77,7 @@ var tests = []TestStruct{
 		Num:  42,
 		Arr:  fillSeq(10),
 		Map:  fillMap(10),
+		Bool: true,
 	},
 	{
 		Name: "medium size",
@@ -83,6 +85,7 @@ var tests = []TestStruct{
 		Num:  42134,
 		Arr:  fillSeq(100),
 		Map:  fillMap(100),
+		Bool: true,
 	},
 	{
 		Name: "large size",
@@ -90,6 +93,7 @@ var tests = []TestStruct{
 		Num:  math.MaxUint16,
 		Arr:  fillSeq(1000),
 		Map:  fillMap(1000),
+		Bool: true,
 	},
 }
 

@@ -63,6 +63,10 @@ func (p *ModelParser[T]) Varchar(setter Setter[T, string]) *ModelParser[T] {
 	return p.register(StringFieldSetter[T](Varchar(), setter))
 }
 
+func (c *ModelParser[T]) Bool(setter Setter[T, bool]) *ModelParser[T] {
+	return c.register(BoolFieldSetter[T](Bool(), setter))
+}
+
 func (p *ModelParser[T]) UInt8(setter Setter[T, uint8]) *ModelParser[T] {
 	return p.register(UInt8FieldSetter[T](UInt8(), setter))
 }

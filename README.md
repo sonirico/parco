@@ -11,23 +11,23 @@ addition to have an appositive effect on performance.
 
 ## Usage
 
-
 ```go
 type Example struct {
-    Greet     string
-    LifeSense uint8
-    Friends   []string
-    Grades    map[string]uint8
+	Greet     string
+	LifeSense uint8
+	Friends   []string
+	Grades    map[string]uint8
+	EvenOrOdd bool
 }
 
 func (e Example) Equals(other Example) bool {
-    return reflect.DeepEqual(e, other)
+	return reflect.DeepEqual(e, other)
 }
 
 func main() {
-    exampleFactory := parco.ObjectFactory[Example]()
-	
-    parser, compiler := parco.Builder[Example](exampleFactory).
+	exampleFactory := parco.ObjectFactory[Example]()
+
+	parser, compiler := parco.Builder[Example](exampleFactory).
 		SmallVarchar(
 			func(e *Example) string {
 				return e.Greet
@@ -69,6 +69,14 @@ func main() {
 				},
 			),
 		).
+		Bool(
+			func(e *Example) bool {
+				return e.EvenOrOdd
+			},
+			func(e *Example, evenOrOdd bool) {
+				e.EvenOrOdd = evenOrOdd
+			},
+		).
 		ParCo()
 
 	ex := Example{
@@ -76,6 +84,7 @@ func main() {
 		LifeSense: 42,
 		Grades:    map[string]uint8{"math": 5, "english": 6},
 		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
+		EvenOrOdd: true,
 	}
 
 	output := bytes.NewBuffer(nil)

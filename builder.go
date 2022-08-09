@@ -65,6 +65,12 @@ func (b ModelBuilder[T]) SmallVarchar(getter Getter[T, string], setter Setter[T,
 	return b
 }
 
+func (b ModelBuilder[T]) Bool(getter Getter[T, bool], setter Setter[T, bool]) ModelBuilder[T] {
+	b.parser.Bool(setter)
+	b.compiler.Bool(getter)
+	return b
+}
+
 func (b ModelBuilder[T]) UInt8(getter Getter[T, uint8], setter Setter[T, uint8]) ModelBuilder[T] {
 	b.parser.UInt8(setter)
 	b.compiler.UInt8(getter)

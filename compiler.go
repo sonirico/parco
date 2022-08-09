@@ -49,6 +49,10 @@ func (c *ModelCompiler[T]) SmallVarchar(getter Getter[T, string]) *ModelCompiler
 	return c.register(StringFieldGetter[T](SmallVarchar(), getter))
 }
 
+func (c *ModelCompiler[T]) Bool(getter Getter[T, bool]) *ModelCompiler[T] {
+	return c.register(BoolFieldGetter[T](Bool(), getter))
+}
+
 func (c *ModelCompiler[T]) UInt8(getter Getter[T, uint8]) *ModelCompiler[T] {
 	return c.register(UInt8FieldGetter[T](UInt8(), getter))
 }

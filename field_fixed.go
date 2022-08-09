@@ -29,6 +29,33 @@ func (s FixedField[T, U]) Compile(item *T, w io.Writer) (err error) {
 	return s.Type.Compile(value, w)
 }
 
+func BoolField[T any](
+	tp Type[bool],
+	getter Getter[T, bool],
+	setter Setter[T, bool],
+) Field[T, bool] {
+	return FixedField[T, bool]{
+		Type:   tp,
+		Setter: setter,
+		Getter: getter,
+		Pooler: SinglePool,
+	}
+}
+
+func BoolFieldGetter[T any](
+	tp Type[bool],
+	getter Getter[T, bool],
+) Field[T, bool] {
+	return BoolField[T](tp, getter, nil)
+}
+
+func BoolFieldSetter[T any](
+	tp Type[bool],
+	setter Setter[T, bool],
+) Field[T, bool] {
+	return BoolField[T](tp, nil, setter)
+}
+
 func UInt8Field[T any](
 	tp Type[uint8],
 	getter Getter[T, uint8],

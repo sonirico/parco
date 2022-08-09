@@ -13,6 +13,7 @@ type Example struct {
 	LifeSense uint8
 	Friends   []string
 	Grades    map[string]uint8
+	EvenOrOdd bool
 }
 
 func (e Example) Equals(other Example) bool {
@@ -64,6 +65,14 @@ func main() {
 				},
 			),
 		).
+		Bool(
+			func(e *Example) bool {
+				return e.EvenOrOdd
+			},
+			func(e *Example, evenOrOdd bool) {
+				e.EvenOrOdd = evenOrOdd
+			},
+		).
 		ParCo()
 
 	ex := Example{
@@ -71,6 +80,7 @@ func main() {
 		LifeSense: 42,
 		Grades:    map[string]uint8{"math": 5, "english": 6},
 		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
+		EvenOrOdd: true,
 	}
 
 	output := bytes.NewBuffer(nil)

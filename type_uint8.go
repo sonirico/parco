@@ -43,3 +43,25 @@ func UInt8Header() Type[int] {
 		CompileUInt8Header,
 	)
 }
+
+func Bool() Type[bool] {
+	return NewFixedType[bool](
+		1,
+		func(data []byte) (bool, error) {
+			n, err := ParseUInt8(data)
+			if err != nil {
+				return false, err
+			}
+
+			return n == 1, err
+		},
+		func(value bool, box []byte) (err error) {
+			var n uint8
+			if value {
+				n = 1
+			}
+
+			return CompileUInt8(n, box)
+		},
+	)
+}

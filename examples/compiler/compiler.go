@@ -12,6 +12,7 @@ type Example struct {
 	LifeSense uint8
 	Friends   []string
 	Grades    map[string]uint8
+	EvenOrOdd bool
 }
 
 func main() {
@@ -40,7 +41,10 @@ func main() {
 					return e.Grades
 				},
 			),
-		)
+		).
+		Bool(func(e *Example) bool {
+			return e.EvenOrOdd
+		})
 
 	ex := Example{
 		Greet:     "hey",
@@ -49,7 +53,8 @@ func main() {
 			"math":    5,
 			"english": 6,
 		},
-		Friends: []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
+		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
+		EvenOrOdd: true,
 	}
 
 	output := bytes.NewBuffer(nil)

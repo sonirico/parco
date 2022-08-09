@@ -9,7 +9,7 @@ import (
 
 var (
 	data = []byte{
-		3, 104, 101, 121, 42, 4, 7, 64, 98, 111, 108, 105, 114, 105, 8, 64, 100, 97, 110, 105, 114, 111, 100, 9, 64, 101,
+		3, 104, 101, 121, 42, 1, 4, 7, 64, 98, 111, 108, 105, 114, 105, 8, 64, 100, 97, 110, 105, 114, 111, 100, 9, 64, 101,
 		110, 114, 105, 103, 108, 101, 115, 4, 64, 102, 51, 114, 2, 7, 101, 110, 103, 108, 105, 115, 104, 6, 4, 109, 97,
 		116, 104, 5,
 	}
@@ -20,6 +20,7 @@ type Example struct {
 	LifeSense uint8
 	Friends   []string
 	Grades    map[string]uint8
+	EvenOrOdd bool
 }
 
 func newParser(factory parco.Factory[Example]) *parco.ModelParser[Example] {
@@ -30,6 +31,11 @@ func newParser(factory parco.Factory[Example]) *parco.ModelParser[Example] {
 		UInt8(func(s *Example, lifeSense uint8) {
 			s.LifeSense = lifeSense
 		}).
+		Bool(
+			func(e *Example, evenOrOdd bool) {
+				e.EvenOrOdd = evenOrOdd
+			},
+		).
 		Array(
 			parco.ArrayFieldSetter(
 				parco.UInt8Header(),
@@ -66,6 +72,7 @@ func parseBytes(data []byte) {
 	log.Println(parsed.LifeSense)
 	log.Println(parsed.Friends)
 	log.Println(parsed.Grades)
+	log.Println(parsed.EvenOrOdd)
 }
 
 func parseStream(data []byte) {
@@ -82,6 +89,7 @@ func parseStream(data []byte) {
 	log.Println(parsed.LifeSense)
 	log.Println(parsed.Friends)
 	log.Println(parsed.Grades)
+	log.Println(parsed.EvenOrOdd)
 }
 
 func parseWithPool(data []byte) {
@@ -101,6 +109,7 @@ func parseWithPool(data []byte) {
 	log.Println(parsed.LifeSense)
 	log.Println(parsed.Friends)
 	log.Println(parsed.Grades)
+	log.Println(parsed.EvenOrOdd)
 
 	// DO some work
 	// ....
