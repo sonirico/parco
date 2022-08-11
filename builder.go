@@ -21,13 +21,11 @@ type (
 )
 
 func (b ModelBuilder[T]) Compile(value T, w io.Writer) error {
-	for _, f := range b.fields {
-		if err := f.Compile(&value, w); err != nil {
-			return err
-		}
-	}
+	return b.compiler.Compile(value, w)
+}
 
-	return nil
+func (b ModelBuilder[T]) Parse(r io.Reader) (T, error) {
+	return b.parser.Parse(r)
 }
 
 func Builder[T any](factory Factory[T]) ModelBuilder[T] {
@@ -39,6 +37,12 @@ func Builder[T any](factory Factory[T]) ModelBuilder[T] {
 
 func (b ModelBuilder[T]) ParCo() (Parser[T], Compiler[T]) {
 	return b.parser, b.compiler
+}
+
+func (b ModelBuilder[T]) Struct(field fieldBuilder[T]) ModelBuilder[T] {
+	b.parser.Struct(field)
+	b.compiler.Struct(field)
+	return b
 }
 
 func (b ModelBuilder[T]) Map(field fieldBuilder[T]) ModelBuilder[T] {

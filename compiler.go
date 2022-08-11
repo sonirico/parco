@@ -33,6 +33,10 @@ func CompilerModel[T any]() *ModelCompiler[T] {
 	return &ModelCompiler[T]{}
 }
 
+func (c *ModelCompiler[T]) Struct(field fieldCompiler[T]) *ModelCompiler[T] {
+	return c.register(field)
+}
+
 func (c *ModelCompiler[T]) Array(field fieldCompiler[T]) *ModelCompiler[T] {
 	return c.register(field)
 }

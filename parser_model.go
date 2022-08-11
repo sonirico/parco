@@ -47,6 +47,10 @@ func (p *ModelParser[T]) parse(r io.Reader) (T, error) {
 	return model, nil
 }
 
+func (p *ModelParser[T]) Struct(field fieldParser[T]) *ModelParser[T] {
+	return p.register(field)
+}
+
 func (p *ModelParser[T]) Array(field fieldParser[T]) *ModelParser[T] {
 	return p.register(field)
 }

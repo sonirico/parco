@@ -7,16 +7,32 @@ import (
 	"github.com/sonirico/parco"
 )
 
-type Example struct {
-	Greet     string
-	LifeSense uint8
-	Friends   []string
-	Grades    map[string]uint8
-	EvenOrOdd bool
-}
+type (
+	Animal struct {
+		Age    uint8
+		Specie string
+	}
+
+	Example struct {
+		Greet     string
+		LifeSense uint8
+		Friends   []string
+		Grades    map[string]uint8
+		EvenOrOdd bool
+		Pet       Animal
+	}
+)
 
 func main() {
-	compiler := parco.CompilerModel[Example]().
+	animalCompiler := parco.CompilerModel[Animal]().
+		SmallVarchar(func(e *Animal) string {
+			return e.Specie
+		}).
+		UInt8(func(e *Animal) uint8 {
+			return e.Age
+		})
+
+	exampleCompiler := parco.CompilerModel[Example]().
 		SmallVarchar(func(e *Example) string {
 			return e.Greet
 		}).
@@ -44,7 +60,15 @@ func main() {
 		).
 		Bool(func(e *Example) bool {
 			return e.EvenOrOdd
-		})
+		}).
+		Struct(
+			parco.StructFieldGetter[Example, Animal](
+				func(e *Example) Animal {
+					return e.Pet
+				},
+				animalCompiler,
+			),
+		)
 
 	ex := Example{
 		Greet:     "hey",
@@ -55,11 +79,15 @@ func main() {
 		},
 		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
 		EvenOrOdd: true,
+		Pet: Animal{
+			Age:    3,
+			Specie: "cat",
+		},
 	}
 
 	output := bytes.NewBuffer(nil)
-	if err := compiler.Compile(ex, output); err != nil {
+	if err := exampleCompiler.Compile(ex, output); err != nil {
 		log.Fatal(err)
 	}
-	log.Println(output.Bytes())
+	log.Println(parco.FormatBytes(output.Bytes()))
 }
