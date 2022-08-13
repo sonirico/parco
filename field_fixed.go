@@ -7,7 +7,6 @@ type FixedField[T, U any] struct {
 	Type   Type[U]
 	Setter Setter[T, U]
 	Getter Getter[T, U]
-	Pooler Pooler
 }
 
 func (s FixedField[T, U]) ID() string {
@@ -38,7 +37,6 @@ func BoolField[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -65,7 +63,6 @@ func UInt8Field[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -92,7 +89,6 @@ func Int8Field[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -119,7 +115,6 @@ func UInt16Field[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -146,7 +141,6 @@ func Int16Field[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -173,7 +167,6 @@ func UInt32Field[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -200,7 +193,6 @@ func Int32Field[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -227,7 +219,6 @@ func UInt64Field[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -254,7 +245,6 @@ func Int64Field[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -281,7 +271,6 @@ func IntField[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 
@@ -303,8 +292,7 @@ func SkipField[T any](
 	tp Type[any],
 ) Field[T, any] {
 	return FixedField[T, any]{
-		Type:   tp,
-		Pooler: SinglePool,
+		Type: tp,
 	}
 }
 

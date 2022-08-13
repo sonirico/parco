@@ -14,11 +14,18 @@ type (
 	ModelBuilder[T any] struct {
 		fields []fieldBuilder[T]
 
-		parser *ModelParser[T]
+		parser *Parser[T]
 
-		compiler *ModelCompiler[T]
+		compiler *Compiler[T]
 	}
 )
+
+func Builder[T any](factory Factory[T]) ModelBuilder[T] {
+	return ModelBuilder[T]{
+		parser:   ParserModel(factory),
+		compiler: CompilerModel[T](),
+	}
+}
 
 func (b ModelBuilder[T]) Compile(value T, w io.Writer) error {
 	return b.compiler.Compile(value, w)
@@ -28,14 +35,7 @@ func (b ModelBuilder[T]) Parse(r io.Reader) (T, error) {
 	return b.parser.Parse(r)
 }
 
-func Builder[T any](factory Factory[T]) ModelBuilder[T] {
-	return ModelBuilder[T]{
-		parser:   ParserModel(factory),
-		compiler: CompilerModel[T](),
-	}
-}
-
-func (b ModelBuilder[T]) ParCo() (Parser[T], Compiler[T]) {
+func (b ModelBuilder[T]) ParCo() (*Parser[T], *Compiler[T]) {
 	return b.parser, b.compiler
 }
 
@@ -138,6 +138,12 @@ func (b ModelBuilder[T]) UInt64(order binary.ByteOrder, getter Getter[T, uint64]
 func (b ModelBuilder[T]) Int(order binary.ByteOrder, getter Getter[T, int], setter Setter[T, int]) ModelBuilder[T] {
 	b.parser.Int(order, setter)
 	b.compiler.Int(order, getter)
+	return b
+}
+
+func (b ModelBuilder[T]) Option(field fieldBuilder[T]) ModelBuilder[T] {
+	b.parser.Option(field)
+	b.compiler.Option(field)
 	return b
 }
 

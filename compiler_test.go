@@ -40,7 +40,7 @@ func fillMap(le int) map[string]uint8 {
 	return r
 }
 
-func newCompiler(arrLen int) *ModelCompiler[TestStruct] {
+func newCompiler(arrLen int) *Compiler[TestStruct] {
 	var arrayHeadType IntType
 	if arrLen < 256 {
 		arrayHeadType = UInt8Header()
@@ -133,7 +133,7 @@ func parcoDiscardCompilerFactory(t TestStruct) compileFuncType {
 
 func benchmarkCompile(b *testing.B, tests []TestStruct, compileFuncFactory compileFuncFactory) {
 	for _, test := range tests {
-		// creating compiler needs different field types as per different test payloads
+		// creating Compiler needs different field types as per different test payloads
 		compileFunc := compileFuncFactory(test)
 		b.Run(test.Name, func(b *testing.B) {
 			var totalBytes int

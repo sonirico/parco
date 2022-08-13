@@ -9,7 +9,6 @@ func StringField[T any](
 		Type:   tp,
 		Setter: setter,
 		Getter: getter,
-		Pooler: SinglePool,
 	}
 }
 

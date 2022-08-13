@@ -38,7 +38,7 @@ func ArrayField[T, U any](
 ) Field[T, U] {
 	return arrayField[T, U]{
 		header: header,
-		inner:  NewArrayType[U](header, inner),
+		inner:  Array[U](header, inner),
 		setter: setter,
 		getter: getter,
 	}

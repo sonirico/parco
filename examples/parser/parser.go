@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"log"
 
 	"github.com/sonirico/parco"
@@ -11,7 +12,7 @@ var (
 	data = []byte{
 		3, 104, 101, 121, 42, 4, 7, 64, 98, 111, 108, 105, 114, 105, 8, 64, 100, 97, 110, 105, 114, 111, 100,
 		9, 64, 101, 110, 114, 105, 103, 108, 101, 115, 4, 64, 102, 51, 114, 2, 4, 109, 97, 116, 104, 5, 7, 101,
-		110, 103, 108, 105, 115, 104, 6, 1, 3, 99, 97, 116, 3,
+		110, 103, 108, 105, 115, 104, 6, 1, 3, 99, 97, 116, 3, 1, 1, 0, 0, 0, 0, 0, 0, 0,
 	}
 )
 
@@ -28,16 +29,17 @@ type (
 		Grades    map[string]uint8
 		EvenOrOdd bool
 		Pet       Animal
+		Pointer   *int
 	}
 )
 
-func newAnimalParser() *parco.ModelParser[Animal] {
+func newAnimalParser() *parco.Parser[Animal] {
 	return parco.ParserModel[Animal](parco.ObjectFactory[Animal]()).
 		SmallVarchar(func(a *Animal, specie string) { a.Specie = specie }).
 		UInt8(func(a *Animal, age uint8) { a.Age = age })
 }
 
-func newExampleParser(factory parco.Factory[Example]) *parco.ModelParser[Example] {
+func newExampleParser(factory parco.Factory[Example]) *parco.Parser[Example] {
 	return parco.ParserModel[Example](factory).
 		SmallVarchar(func(s *Example, greet string) {
 			s.Greet = greet
@@ -76,6 +78,12 @@ func newExampleParser(factory parco.Factory[Example]) *parco.ModelParser[Example
 				},
 				newAnimalParser(),
 			),
+		).
+		Option(
+			parco.OptionFieldSetter[Example, int](
+				parco.Int(binary.LittleEndian),
+				func(e *Example, value *int) { e.Pointer = value },
+			),
 		)
 }
 
@@ -96,6 +104,7 @@ func parseBytes(data []byte) {
 	log.Println(parsed.Grades)
 	log.Println(parsed.EvenOrOdd)
 	log.Println(parsed.Pet)
+	log.Println(parsed.Pointer, *parsed.Pointer)
 }
 
 func parseStream(data []byte) {
@@ -114,6 +123,7 @@ func parseStream(data []byte) {
 	log.Println(parsed.Grades)
 	log.Println(parsed.EvenOrOdd)
 	log.Println(parsed.Pet)
+	log.Println(parsed.Pointer, *parsed.Pointer)
 }
 
 func parseWithPool(data []byte) {
@@ -126,6 +136,7 @@ func parseWithPool(data []byte) {
 			e.Grades = make(map[string]uint8)
 			e.Pet.Age = 0
 			e.Pet.Specie = ""
+			e.Pointer = nil
 		}),
 	)
 
@@ -144,6 +155,7 @@ func parseWithPool(data []byte) {
 	log.Println(parsed.Grades)
 	log.Println(parsed.EvenOrOdd)
 	log.Println(parsed.Pet)
+	log.Println(parsed.Pointer, *parsed.Pointer)
 	// ....
 
 	// Release model

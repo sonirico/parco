@@ -3,6 +3,11 @@ package parco
 import "io"
 
 type (
+	structTypeI[T any] interface {
+		ParserType[T]
+		CompilerType[T]
+	}
+
 	structType[T any] struct {
 		ParserType[T]
 		CompilerType[T]
@@ -53,7 +58,7 @@ func newStructField[T, U any](
 func StructField[T, U any](
 	getter Getter[T, U],
 	setter Setter[T, U],
-	inner structType[U],
+	inner structTypeI[U],
 ) Field[T, U] {
 	return newStructField[T, U](
 		setter,

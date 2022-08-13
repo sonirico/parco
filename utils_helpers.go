@@ -7,3 +7,7 @@ func If[T any](condition bool, a, b T) T {
 
 	return b
 }
+
+func Ptr[T any](t T) *T {
+	return &t
+}

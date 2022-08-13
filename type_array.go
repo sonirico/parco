@@ -44,19 +44,6 @@ func (t ArrayType[T]) Parse(r io.Reader) (res Iterable[T], err error) {
 	}
 
 	return Slice[T](values), nil
-
-	// TODO: pseudocode for LazyArray impl
-
-	//le := t.length * t.inner.ByteLength()
-	//bts := t.pool.Get(le)
-	//defer t.pool.Put(bts)
-	//data := *bts
-	//data = data[:le]
-	//_, err = r.Read(data)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return ArrayValue[T]{data: data, innerType: t.inner}, nil
 }
 
 func (t ArrayType[T]) Compile(x Iterable[T], w io.Writer) error {
@@ -74,70 +61,10 @@ func (t ArrayType[T]) Compile(x Iterable[T], w io.Writer) error {
 	})
 }
 
-func NewArrayType[T any](header IntType, inner Type[T]) ArrayType[T] {
+func Array[T any](header IntType, inner Type[T]) ArrayType[T] {
 	return ArrayType[T]{
 		header: header,
 		inner:  inner,
 		pool:   SinglePool,
 	}
 }
-
-//type ArrayValue[T any] struct {
-//	data []byte
-//
-//	innerType Type[T]
-//}
-//
-//var (
-//	NoopArrVal = ArrayValue[any]{}
-//	noVal      = Value{}
-//)
-//
-//func (v ArrayValue[T]) At(pos int) (val Value, err error) {
-//	offset := pos * v.innerType.Length()
-//	if offset >= byteLength(v.data) {
-//		err = errors.New("out of bounds error")
-//		return
-//	}
-//
-//	limit := offset + v.innerType.Length()
-//	rawVal, err := v.innerType.Parse(bytes.NewBuffer(v.data[offset:limit])) // TODO: ParseBytes interface, bytes.Buffer not desired
-//	if err != nil {
-//		return
-//	}
-//
-//	val.value = rawVal
-//	return
-//}
-//
-//func (v ArrayValue[T]) Range(f func(Value)) {
-//	limit := byteLength(v.data) / v.innerType.Length()
-//
-//	for i := 0; i < limit; i++ {
-//		val, err := v.At(i)
-//		if err == nil {
-//			f(val)
-//		}
-//	}
-//}
-//
-//func (v ArrayValue[T]) Len() int {
-//	return byteLength(v.data)
-//}
-//
-//type Value struct {
-//	value any
-//}
-//
-//func (v Value) Unwrap() any {
-//	return v.value
-//}
-//
-//func (v Value) GetInt8() int8 {
-//	return v.value.(int8)
-//}
-//
-//func (v Value) GetUInt8() uint8 {
-//	return v.value.(uint8)
-//}
-//

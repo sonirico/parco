@@ -27,6 +27,7 @@ type (
 		Grades    map[string]uint8
 		EvenOrOdd bool
 		Pet       Animal
+		Pointer   *int
 	}
 )
 
@@ -80,6 +81,13 @@ func main() {
 				animalBuilder,
 			),
 		).
+		Option(
+			parco.OptionField[Example, int](
+				parco.Int(binary.LittleEndian),
+				func(e *Example, value *int) { e.Pointer = value },
+				func(e *Example) *int { return e.Pointer },
+			),
+		).
 		ParCo()
 
 	ex := Example{
@@ -89,6 +97,7 @@ func main() {
 		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
 		EvenOrOdd: true,
 		Pet:       Animal{Age: 3, Specie: "cat"},
+		Pointer:   parco.Ptr(73),
 	}
 
 	output := bytes.NewBuffer(nil)
@@ -108,7 +117,6 @@ func main() {
 		panic("not equals")
 	}
 }
-
 ```
 
 ### Single types
@@ -125,31 +133,32 @@ func main () {
 
 ### Supported fields
 
-| Field         | Status | Size                         |
-|---------------|--------|------------------------------|
-| byte          | ✅      | 1                            |
-| int8          | ✅      | 1                            |
-| uint8         | ✅      | 1                            |
-| int16         | ✅      | 2                            |
-| uint16        | ✅      | 2                            |
-| int32         | ✅      | 4                            |
-| uint32        | ✅      | 4                            |
-| int64         | ✅      | 8                            |
-| uint64        | ✅      | 8                            |
-| float32       | 👷🚧   | 4                            |
-| float64       | 👷🚧   | 8                            |
-| int           | ✅      | 4/8                          |
-| bool          | ✅      | 1                            |
-| small varchar | ✅      | dyn (up to 255)              |
-| varchar       | ✅      | dyn (up to 65535)            |
-| text          | ✅      | dyn (up to max uint32 chars) |
-| long text     | ✅      | dyn (up to max uint64 chars) |
-| string        | ✅      | dyn                          |
-| bytes (blob)  | ✅      | dyn                          |
-| map           | ✅      | -                            |
-| slice         | ✅      | -                            |
-| struct        | ✅      | -                            |
-| time.Time     | 👷🚧   | ?                            |
+| Field                 | Status | Size                         |
+|-----------------------|--------|------------------------------|
+| byte                  | ✅      | 1                            |
+| int8                  | ✅      | 1                            |
+| uint8                 | ✅      | 1                            |
+| int16                 | ✅      | 2                            |
+| uint16                | ✅      | 2                            |
+| int32                 | ✅      | 4                            |
+| uint32                | ✅      | 4                            |
+| int64                 | ✅      | 8                            |
+| uint64                | ✅      | 8                            |
+| float32               | 👷🚧   | 4                            |
+| float64               | 👷🚧   | 8                            |
+| int                   | ✅      | 4/8                          |
+| bool                  | ✅      | 1                            |
+| small varchar         | ✅      | dyn (up to 255)              |
+| varchar               | ✅      | dyn (up to 65535)            |
+| text                  | ✅      | dyn (up to max uint32 chars) |
+| long text             | ✅      | dyn (up to max uint64 chars) |
+| string                | ✅      | dyn                          |
+| bytes (blob)          | ✅      | dyn                          |
+| map                   | ✅      | -                            |
+| slice                 | ✅      | -                            |
+| struct                | ✅      | -                            |
+| time.Time             | 👷🚧   | ?                            |
+| optional[T] (pointer) | ✅      | 1 + inner size               |
 
 For fully functional examples showing the whole API, refer to [Examples](https://github.com/sonirico/parco/tree/master/examples).
 

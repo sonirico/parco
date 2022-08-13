@@ -10,16 +10,12 @@ type (
 		Compile(item *T, writer io.Writer) error
 	}
 
-	Compiler[T any] interface {
-		Compile(T, io.Writer) error
-	}
-
-	ModelCompiler[T any] struct {
+	Compiler[T any] struct {
 		fields []fieldCompiler[T]
 	}
 )
 
-func (c ModelCompiler[T]) Compile(value T, w io.Writer) error {
+func (c Compiler[T]) Compile(value T, w io.Writer) error {
 	for _, f := range c.fields {
 		if err := f.Compile(&value, w); err != nil {
 			return err
@@ -29,87 +25,91 @@ func (c ModelCompiler[T]) Compile(value T, w io.Writer) error {
 	return nil
 }
 
-func CompilerModel[T any]() *ModelCompiler[T] {
-	return &ModelCompiler[T]{}
+func CompilerModel[T any]() *Compiler[T] {
+	return &Compiler[T]{}
 }
 
-func (c *ModelCompiler[T]) Struct(field fieldCompiler[T]) *ModelCompiler[T] {
+func (c *Compiler[T]) Struct(field fieldCompiler[T]) *Compiler[T] {
 	return c.register(field)
 }
 
-func (c *ModelCompiler[T]) Array(field fieldCompiler[T]) *ModelCompiler[T] {
+func (c *Compiler[T]) Array(field fieldCompiler[T]) *Compiler[T] {
 	return c.register(field)
 }
 
-func (c *ModelCompiler[T]) Map(field fieldCompiler[T]) *ModelCompiler[T] {
+func (c *Compiler[T]) Map(field fieldCompiler[T]) *Compiler[T] {
 	return c.register(field)
 }
 
-func (c *ModelCompiler[T]) Varchar(getter Getter[T, string]) *ModelCompiler[T] {
+func (c *Compiler[T]) Varchar(getter Getter[T, string]) *Compiler[T] {
 	return c.register(StringFieldGetter[T](Varchar(), getter))
 }
 
-func (c *ModelCompiler[T]) SmallVarchar(getter Getter[T, string]) *ModelCompiler[T] {
+func (c *Compiler[T]) SmallVarchar(getter Getter[T, string]) *Compiler[T] {
 	return c.register(StringFieldGetter[T](SmallVarchar(), getter))
 }
 
-func (c *ModelCompiler[T]) Bool(getter Getter[T, bool]) *ModelCompiler[T] {
+func (c *Compiler[T]) Bool(getter Getter[T, bool]) *Compiler[T] {
 	return c.register(BoolFieldGetter[T](Bool(), getter))
 }
 
-func (c *ModelCompiler[T]) Byte(getter Getter[T, byte]) *ModelCompiler[T] {
+func (c *Compiler[T]) Byte(getter Getter[T, byte]) *Compiler[T] {
 	return c.register(UInt8FieldGetter[T](Byte(), getter))
 }
 
-func (c *ModelCompiler[T]) UInt8(getter Getter[T, uint8]) *ModelCompiler[T] {
+func (c *Compiler[T]) UInt8(getter Getter[T, uint8]) *Compiler[T] {
 	return c.register(UInt8FieldGetter[T](UInt8(), getter))
 }
 
-func (c *ModelCompiler[T]) Int8(getter Getter[T, int8]) *ModelCompiler[T] {
+func (c *Compiler[T]) Int8(getter Getter[T, int8]) *Compiler[T] {
 	return c.register(Int8FieldGetter[T](Int8(), getter))
 }
 
-func (c *ModelCompiler[T]) UInt16(order binary.ByteOrder, getter Getter[T, uint16]) *ModelCompiler[T] {
+func (c *Compiler[T]) UInt16(order binary.ByteOrder, getter Getter[T, uint16]) *Compiler[T] {
 	return c.register(UInt16FieldGetter[T](UInt16(order), getter))
 }
 
-func (c *ModelCompiler[T]) Int16(order binary.ByteOrder, getter Getter[T, int16]) *ModelCompiler[T] {
+func (c *Compiler[T]) Int16(order binary.ByteOrder, getter Getter[T, int16]) *Compiler[T] {
 	return c.register(Int16FieldGetter[T](Int16(order), getter))
 }
 
-func (c *ModelCompiler[T]) UInt16LE(getter Getter[T, uint16]) *ModelCompiler[T] {
+func (c *Compiler[T]) UInt16LE(getter Getter[T, uint16]) *Compiler[T] {
 	return c.register(UInt16FieldGetter[T](UInt16LE(), getter))
 }
 
-func (c *ModelCompiler[T]) UInt16BE(getter Getter[T, uint16]) *ModelCompiler[T] {
+func (c *Compiler[T]) UInt16BE(getter Getter[T, uint16]) *Compiler[T] {
 	return c.register(UInt16FieldGetter[T](UInt16BE(), getter))
 }
 
-func (c *ModelCompiler[T]) UInt32(order binary.ByteOrder, getter Getter[T, uint32]) *ModelCompiler[T] {
+func (c *Compiler[T]) UInt32(order binary.ByteOrder, getter Getter[T, uint32]) *Compiler[T] {
 	return c.register(UInt32FieldGetter[T](UInt32(order), getter))
 }
 
-func (c *ModelCompiler[T]) Int32(order binary.ByteOrder, getter Getter[T, int32]) *ModelCompiler[T] {
+func (c *Compiler[T]) Int32(order binary.ByteOrder, getter Getter[T, int32]) *Compiler[T] {
 	return c.register(Int32FieldGetter[T](Int32(order), getter))
 }
 
-func (c *ModelCompiler[T]) UInt64(order binary.ByteOrder, getter Getter[T, uint64]) *ModelCompiler[T] {
+func (c *Compiler[T]) UInt64(order binary.ByteOrder, getter Getter[T, uint64]) *Compiler[T] {
 	return c.register(UInt64FieldGetter[T](UInt64(order), getter))
 }
 
-func (c *ModelCompiler[T]) Int64(order binary.ByteOrder, getter Getter[T, int64]) *ModelCompiler[T] {
+func (c *Compiler[T]) Int64(order binary.ByteOrder, getter Getter[T, int64]) *Compiler[T] {
 	return c.register(Int64FieldGetter[T](Int64(order), getter))
 }
 
-func (c *ModelCompiler[T]) Int(order binary.ByteOrder, getter Getter[T, int]) *ModelCompiler[T] {
+func (c *Compiler[T]) Int(order binary.ByteOrder, getter Getter[T, int]) *Compiler[T] {
 	return c.register(IntFieldGetter[T](Int(order), getter))
 }
 
-func (c *ModelCompiler[T]) Field(f fieldCompiler[T]) *ModelCompiler[T] {
+func (c *Compiler[T]) Option(f fieldCompiler[T]) *Compiler[T] {
 	return c.register(f)
 }
 
-func (c *ModelCompiler[T]) register(field fieldCompiler[T]) *ModelCompiler[T] {
+func (c *Compiler[T]) Field(f fieldCompiler[T]) *Compiler[T] {
+	return c.register(f)
+}
+
+func (c *Compiler[T]) register(field fieldCompiler[T]) *Compiler[T] {
 	c.fields = append(c.fields, field)
 	return c
 }

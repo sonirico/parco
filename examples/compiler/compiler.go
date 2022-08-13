@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"log"
 
 	"github.com/sonirico/parco"
@@ -20,6 +21,7 @@ type (
 		Grades    map[string]uint8
 		EvenOrOdd bool
 		Pet       Animal
+		Pointer   *int
 	}
 )
 
@@ -68,6 +70,12 @@ func main() {
 				},
 				animalCompiler,
 			),
+		).
+		Option(
+			parco.OptionFieldGetter[Example, int](
+				parco.Int(binary.LittleEndian),
+				func(e *Example) *int { return e.Pointer },
+			),
 		)
 
 	ex := Example{
@@ -83,6 +91,7 @@ func main() {
 			Age:    3,
 			Specie: "cat",
 		},
+		Pointer: parco.Ptr(1),
 	}
 
 	output := bytes.NewBuffer(nil)
