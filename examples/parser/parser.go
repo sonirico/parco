@@ -119,6 +119,14 @@ func parseStream(data []byte) {
 func parseWithPool(data []byte) {
 	exampleFactory := parco.PooledFactory[Example](
 		parco.ObjectFactory[Example](),
+		parco.WithResetFunc(func(e *Example) {
+			e.EvenOrOdd = false
+			e.Greet = ""
+			e.Friends = nil
+			e.Grades = make(map[string]uint8)
+			e.Pet.Age = 0
+			e.Pet.Specie = ""
+		}),
 	)
 
 	parser := newExampleParser(exampleFactory)

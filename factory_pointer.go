@@ -12,9 +12,19 @@ type (
 
 		Put(T)
 	}
+
+	FuncFactory[T any] func() T
+
+	nativePooledFactoryOption[T any] interface {
+		Configure(f *NativePooledFactory[T])
+	}
+
+	nativePooledFactoryOptionFunc[T any] func(factory *NativePooledFactory[T])
 )
 
-type FuncFactory[T any] func() T
+func (f nativePooledFactoryOptionFunc[T]) Configure(factory *NativePooledFactory[T]) {
+	f(factory)
+}
 
 func (f FuncFactory[T]) Get() T {
 	return f()
@@ -28,6 +38,8 @@ func ObjectFactory[T any]() Factory[T] {
 
 type NativePooledFactory[T any] struct {
 	inner sync.Pool
+
+	resetFunc func(*T)
 }
 
 func (f NativePooledFactory[T]) Get() T {
@@ -38,10 +50,22 @@ func (f NativePooledFactory[T]) Put(t T) {
 	f.inner.Put(t)
 }
 
-func PooledFactory[T any](inner Factory[T]) PoolFactory[T] {
-	return NativePooledFactory[T]{
+func PooledFactory[T any](inner Factory[T], options ...nativePooledFactoryOption[T]) PoolFactory[T] {
+	f := NativePooledFactory[T]{
 		inner: sync.Pool{New: func() any {
 			return inner.Get()
 		}},
 	}
+
+	for _, opt := range options {
+		opt.Configure(&f)
+	}
+
+	return f
+}
+
+func WithResetFunc[T any](fn func(*T)) nativePooledFactoryOption[T] {
+	return nativePooledFactoryOptionFunc[T](func(factory *NativePooledFactory[T]) {
+		factory.resetFunc = fn
+	})
 }
