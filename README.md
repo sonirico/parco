@@ -11,6 +11,8 @@ addition to have an appositive effect on performance.
 
 ## Usage
 
+### Parser & compiler
+
 ```go
 type (
 	Animal struct {
@@ -109,6 +111,46 @@ func main() {
 
 ```
 
+### Single types
+
+```go
+func main () {
+	intType := parco.Int(binary.LittleEndian)
+	buf := bytes.NewBuffer(nil)
+	_ = intType.Compile(math.MaxInt, buf)
+	n, _ := intType.Parse(buf)
+	log.Println(n == math.MaxInt)
+}
+```
+
+### Supported fields
+
+| Field         | Status | Size                         |
+|---------------|--------|------------------------------|
+| byte          | ✅      | 1                            |
+| int8          | ✅      | 1                            |
+| uint8         | ✅      | 1                            |
+| int16         | ✅      | 2                            |
+| uint16        | ✅      | 2                            |
+| int32         | ✅      | 4                            |
+| uint32        | ✅      | 4                            |
+| int64         | ✅      | 8                            |
+| uint64        | ✅      | 8                            |
+| float32       | 👷🚧   | 4                            |
+| float64       | 👷🚧   | 8                            |
+| int           | ✅      | 4/8                          |
+| bool          | ✅      | 1                            |
+| small varchar | ✅      | dyn (up to 255)              |
+| varchar       | ✅      | dyn (up to 65535)            |
+| text          | ✅      | dyn (up to max uint32 chars) |
+| long text     | ✅      | dyn (up to max uint64 chars) |
+| string        | ✅      | dyn                          |
+| bytes (blob)  | ✅      | dyn                          |
+| map           | ✅      | -                            |
+| slice         | ✅      | -                            |
+| struct        | ✅      | -                            |
+| time.Time     | 👷🚧   | ?                            |
+
 For fully functional examples showing the whole API, refer to [Examples](https://github.com/sonirico/parco/tree/master/examples).
 
 
@@ -153,7 +195,10 @@ Msgpack_Compile/large_size-12                      6274            191314 ns/op 
 
 ## TODO
 
-- Support for all primitive types: boolean, nil...
+- Support for all primitive types:
+  - Float32/64
+  - Optional / Pointer
+  
 - Extend interface to include version
 - Static code generation
 - Replace `encoding/binary` usage by faster implementations (`WriteByte`)

@@ -11,18 +11,8 @@ type (
 )
 
 type (
-	String string
-
 	Slice[T any] []T
 )
-
-func (s String) Len() int {
-	return len(s)
-}
-
-func (s String) Unwrap() string {
-	return string(s)
-}
 
 func (s Slice[T]) Len() int {
 	return len(s)

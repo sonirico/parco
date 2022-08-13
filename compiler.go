@@ -57,12 +57,24 @@ func (c *ModelCompiler[T]) Bool(getter Getter[T, bool]) *ModelCompiler[T] {
 	return c.register(BoolFieldGetter[T](Bool(), getter))
 }
 
+func (c *ModelCompiler[T]) Byte(getter Getter[T, byte]) *ModelCompiler[T] {
+	return c.register(UInt8FieldGetter[T](Byte(), getter))
+}
+
 func (c *ModelCompiler[T]) UInt8(getter Getter[T, uint8]) *ModelCompiler[T] {
 	return c.register(UInt8FieldGetter[T](UInt8(), getter))
 }
 
+func (c *ModelCompiler[T]) Int8(getter Getter[T, int8]) *ModelCompiler[T] {
+	return c.register(Int8FieldGetter[T](Int8(), getter))
+}
+
 func (c *ModelCompiler[T]) UInt16(order binary.ByteOrder, getter Getter[T, uint16]) *ModelCompiler[T] {
 	return c.register(UInt16FieldGetter[T](UInt16(order), getter))
+}
+
+func (c *ModelCompiler[T]) Int16(order binary.ByteOrder, getter Getter[T, int16]) *ModelCompiler[T] {
+	return c.register(Int16FieldGetter[T](Int16(order), getter))
 }
 
 func (c *ModelCompiler[T]) UInt16LE(getter Getter[T, uint16]) *ModelCompiler[T] {
@@ -71,6 +83,26 @@ func (c *ModelCompiler[T]) UInt16LE(getter Getter[T, uint16]) *ModelCompiler[T] 
 
 func (c *ModelCompiler[T]) UInt16BE(getter Getter[T, uint16]) *ModelCompiler[T] {
 	return c.register(UInt16FieldGetter[T](UInt16BE(), getter))
+}
+
+func (c *ModelCompiler[T]) UInt32(order binary.ByteOrder, getter Getter[T, uint32]) *ModelCompiler[T] {
+	return c.register(UInt32FieldGetter[T](UInt32(order), getter))
+}
+
+func (c *ModelCompiler[T]) Int32(order binary.ByteOrder, getter Getter[T, int32]) *ModelCompiler[T] {
+	return c.register(Int32FieldGetter[T](Int32(order), getter))
+}
+
+func (c *ModelCompiler[T]) UInt64(order binary.ByteOrder, getter Getter[T, uint64]) *ModelCompiler[T] {
+	return c.register(UInt64FieldGetter[T](UInt64(order), getter))
+}
+
+func (c *ModelCompiler[T]) Int64(order binary.ByteOrder, getter Getter[T, int64]) *ModelCompiler[T] {
+	return c.register(Int64FieldGetter[T](Int64(order), getter))
+}
+
+func (c *ModelCompiler[T]) Int(order binary.ByteOrder, getter Getter[T, int]) *ModelCompiler[T] {
+	return c.register(IntFieldGetter[T](Int(order), getter))
 }
 
 func (c *ModelCompiler[T]) Field(f fieldCompiler[T]) *ModelCompiler[T] {

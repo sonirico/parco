@@ -25,6 +25,16 @@ func NewVarcharType(header IntType) Type[string] {
 	}
 }
 
+func String(header IntType) Type[string] {
+	return varType[string]{
+		header:   header,
+		sizer:    SizerFunc[string](func(x string) int { return len(x) }),
+		pool:     SinglePool,
+		parser:   ParseStringFactory(),
+		compiler: CompileStringWriter,
+	}
+}
+
 func SmallVarchar() Type[string] {
 	return NewVarcharType(UInt8Header())
 }
@@ -35,6 +45,13 @@ func Varchar() Type[string] {
 
 func VarcharOrder(order binary.ByteOrder) Type[string] {
 	return NewVarcharType(UInt16Header(order))
+}
+
+func Text(order binary.ByteOrder) Type[string] {
+	return NewVarcharType(UInt32Header(order))
+}
+func LongText(order binary.ByteOrder) Type[string] {
+	return NewVarcharType(UInt64Header(order))
 }
 
 func ParseStringFactory() ParserFunc[string] {

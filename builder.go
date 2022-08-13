@@ -81,6 +81,18 @@ func (b ModelBuilder[T]) UInt8(getter Getter[T, uint8], setter Setter[T, uint8])
 	return b
 }
 
+func (b ModelBuilder[T]) Byte(getter Getter[T, byte], setter Setter[T, byte]) ModelBuilder[T] {
+	b.parser.Byte(setter)
+	b.compiler.Byte(getter)
+	return b
+}
+
+func (b ModelBuilder[T]) Int8(getter Getter[T, int8], setter Setter[T, int8]) ModelBuilder[T] {
+	b.parser.Int8(setter)
+	b.compiler.Int8(getter)
+	return b
+}
+
 func (b ModelBuilder[T]) UInt16(order binary.ByteOrder, getter Getter[T, uint16], setter Setter[T, uint16]) ModelBuilder[T] {
 	b.parser.UInt16(order, setter)
 	b.compiler.UInt16(order, getter)
@@ -96,6 +108,36 @@ func (b ModelBuilder[T]) UInt16LE(getter Getter[T, uint16], setter Setter[T, uin
 func (b ModelBuilder[T]) UInt16BE(getter Getter[T, uint16], setter Setter[T, uint16]) ModelBuilder[T] {
 	b.parser.UInt16BE(setter)
 	b.compiler.UInt16BE(getter)
+	return b
+}
+
+func (b ModelBuilder[T]) Int32(order binary.ByteOrder, getter Getter[T, int32], setter Setter[T, int32]) ModelBuilder[T] {
+	b.parser.Int32(order, setter)
+	b.compiler.Int32(order, getter)
+	return b
+}
+
+func (b ModelBuilder[T]) UInt32(order binary.ByteOrder, getter Getter[T, uint32], setter Setter[T, uint32]) ModelBuilder[T] {
+	b.parser.UInt32(order, setter)
+	b.compiler.UInt32(order, getter)
+	return b
+}
+
+func (b ModelBuilder[T]) Int64(order binary.ByteOrder, getter Getter[T, int64], setter Setter[T, int64]) ModelBuilder[T] {
+	b.parser.Int64(order, setter)
+	b.compiler.Int64(order, getter)
+	return b
+}
+
+func (b ModelBuilder[T]) UInt64(order binary.ByteOrder, getter Getter[T, uint64], setter Setter[T, uint64]) ModelBuilder[T] {
+	b.parser.UInt64(order, setter)
+	b.compiler.UInt64(order, getter)
+	return b
+}
+
+func (b ModelBuilder[T]) Int(order binary.ByteOrder, getter Getter[T, int], setter Setter[T, int]) ModelBuilder[T] {
+	b.parser.Int(order, setter)
+	b.compiler.Int(order, getter)
 	return b
 }
 

@@ -7,8 +7,8 @@ func StringField[T any](
 ) Field[T, string] {
 	return FixedField[T, string]{
 		Type:   tp,
-		Setter: (setter),
-		Getter: (getter),
+		Setter: setter,
+		Getter: getter,
 		Pooler: SinglePool,
 	}
 }
@@ -25,16 +25,4 @@ func StringFieldSetter[T any](
 	setter Setter[T, string],
 ) Field[T, string] {
 	return StringField[T](tp, nil, setter)
-}
-
-func stringGetter[T any](getter Getter[T, string]) Getter[T, String] {
-	return func(item *T) String {
-		return String(getter(item))
-	}
-}
-
-func stringSetter[T any](setter Setter[T, string]) Setter[T, String] {
-	return func(item *T, s String) {
-		setter(item, s.Unwrap())
-	}
 }
