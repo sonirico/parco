@@ -11,14 +11,14 @@ type (
 )
 
 type (
-	Slice[T any] []T
+	SliceView[T any] []T
 )
 
-func (s Slice[T]) Len() int {
+func (s SliceView[T]) Len() int {
 	return len(s)
 }
 
-func (s Slice[T]) Range(fn ranger[T]) error {
+func (s SliceView[T]) Range(fn ranger[T]) error {
 	for _, x := range s {
 		if err := fn(x); err != nil {
 			return err
@@ -28,7 +28,7 @@ func (s Slice[T]) Range(fn ranger[T]) error {
 	return nil
 }
 
-func (s Slice[T]) Unwrap() Slice[T] {
+func (s SliceView[T]) Unwrap() SliceView[T] {
 	return s
 }
 

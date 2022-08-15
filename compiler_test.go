@@ -41,26 +41,26 @@ func fillMap(le int) map[string]uint8 {
 }
 
 func newCompiler(arrLen int) *Compiler[TestStruct] {
-	var arrayHeadType IntType
+	var SliceHeadType IntType
 	if arrLen < 256 {
-		arrayHeadType = UInt8Header()
+		SliceHeadType = UInt8Header()
 	} else {
-		arrayHeadType = UInt16HeaderLE()
+		SliceHeadType = UInt16HeaderLE()
 	}
 	return CompilerModel[TestStruct]().
 		Varchar(func(ts *TestStruct) string { return ts.Name }).
 		Varchar(func(ts *TestStruct) string { return ts.Str }).
 		UInt16LE(func(ts *TestStruct) uint16 { return ts.Num }).
-		Array(ArrayField[TestStruct, uint16](
-			arrayHeadType,
+		Slice(SliceField[TestStruct, uint16](
+			SliceHeadType,
 			UInt16LE(),
 			nil,
-			func(ts *TestStruct) Slice[uint16] {
+			func(ts *TestStruct) SliceView[uint16] {
 				return ts.Arr
 			},
 		)).
 		Map(MapField[TestStruct, string, uint8](
-			arrayHeadType,
+			SliceHeadType,
 			SmallVarchar(),
 			UInt8(),
 			nil,

@@ -33,7 +33,7 @@ func (c *Compiler[T]) Struct(field fieldCompiler[T]) *Compiler[T] {
 	return c.register(field)
 }
 
-func (c *Compiler[T]) Array(field fieldCompiler[T]) *Compiler[T] {
+func (c *Compiler[T]) Slice(field fieldCompiler[T]) *Compiler[T] {
 	return c.register(field)
 }
 

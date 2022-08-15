@@ -51,9 +51,9 @@ func (b ModelBuilder[T]) Map(field fieldBuilder[T]) ModelBuilder[T] {
 	return b
 }
 
-func (b ModelBuilder[T]) Array(field fieldBuilder[T]) ModelBuilder[T] {
-	b.parser.Array(field)
-	b.compiler.Array(field)
+func (b ModelBuilder[T]) Slice(field fieldBuilder[T]) ModelBuilder[T] {
+	b.parser.Slice(field)
+	b.compiler.Slice(field)
 	return b
 }
 

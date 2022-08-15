@@ -57,12 +57,12 @@ func main() {
 				func(s *Example) map[string]uint8 { return s.Grades },
 			),
 		).
-		Array(
-			parco.ArrayField[Example, string](
+		Slice(
+			parco.SliceField[Example, string](
 				parco.UInt8Header(),  // up to 255 items
 				parco.SmallVarchar(), // each item's type
-				func(e *Example, friends parco.Slice[string]) { e.Friends = friends },
-				func(e *Example) parco.Slice[string] { return e.Friends },
+				func(e *Example, friends parco.SliceView[string]) { e.Friends = friends },
+				func(e *Example) parco.SliceView[string] { return e.Friends },
 			),
 		).
 		Bool(

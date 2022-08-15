@@ -8,10 +8,10 @@ type (
 	Iterable[T any] interface {
 		Len() int
 		Range(ranger[T]) error
-		Unwrap() Slice[T]
+		Unwrap() SliceView[T]
 	}
 
-	ArrayType[T any] struct {
+	SliceType[T any] struct {
 		length int
 		header IntType
 		inner  Type[T]
@@ -19,11 +19,11 @@ type (
 	}
 )
 
-func (t ArrayType[T]) ByteLength() int {
+func (t SliceType[T]) ByteLength() int {
 	return t.header.ByteLength() + t.length*t.inner.ByteLength()
 }
 
-func (t ArrayType[T]) Parse(r io.Reader) (res Iterable[T], err error) {
+func (t SliceType[T]) Parse(r io.Reader) (res Iterable[T], err error) {
 	var (
 		length int
 	)
@@ -43,10 +43,10 @@ func (t ArrayType[T]) Parse(r io.Reader) (res Iterable[T], err error) {
 		}
 	}
 
-	return Slice[T](values), nil
+	return SliceView[T](values), nil
 }
 
-func (t ArrayType[T]) Compile(x Iterable[T], w io.Writer) error {
+func (t SliceType[T]) Compile(x Iterable[T], w io.Writer) error {
 	t.length = x.Len()
 
 	if err := t.header.Compile(t.length, w); err != nil {
@@ -61,8 +61,8 @@ func (t ArrayType[T]) Compile(x Iterable[T], w io.Writer) error {
 	})
 }
 
-func Array[T any](header IntType, inner Type[T]) ArrayType[T] {
-	return ArrayType[T]{
+func Slice[T any](header IntType, inner Type[T]) SliceType[T] {
+	return SliceType[T]{
 		header: header,
 		inner:  inner,
 		pool:   SinglePool,

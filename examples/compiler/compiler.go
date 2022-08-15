@@ -41,11 +41,11 @@ func main() {
 		UInt8(func(e *Example) uint8 {
 			return e.LifeSense
 		}).
-		Array(
-			parco.ArrayFieldGetter[Example, string](
+		Slice(
+			parco.SliceFieldGetter[Example, string](
 				parco.UInt8Header(),  // up to 255 items
 				parco.SmallVarchar(), // each item
-				func(e *Example) parco.Slice[string] {
+				func(e *Example) parco.SliceView[string] {
 					return e.Friends
 				},
 			),

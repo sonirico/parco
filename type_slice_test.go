@@ -15,25 +15,25 @@ func createSlice[T any](value T, length int) []T {
 	return r
 }
 
-func TestArrayType_Compile(t *testing.T) {
+func TestSliceType_Compile(t *testing.T) {
 	tests := []struct {
 		Name         string
-		inner        ArrayType[uint8]
+		inner        SliceType[uint8]
 		Payload      Iterable[uint8]
 		Expected     []byte
 		ExpectsError bool
 	}{
 		{
-			Name:         "compile array(uint8) should succeed",
-			inner:        Array[uint8](UInt8Header(), UInt8()),
-			Payload:      Slice[uint8]([]uint8{255, 0}),
+			Name:         "compile Slice(uint8) should succeed",
+			inner:        Slice[uint8](UInt8Header(), UInt8()),
+			Payload:      SliceView[uint8]([]uint8{255, 0}),
 			Expected:     []byte{2, 255, 0},
 			ExpectsError: false,
 		},
 		{
-			Name:         "compile array(uint8) with payload larger than configured should fail",
-			inner:        Array[uint8](UInt8Header(), UInt8()),
-			Payload:      Slice[uint8](createSlice[uint8](1, 257)),
+			Name:         "compile Slice(uint8) with payload larger than configured should fail",
+			inner:        Slice[uint8](UInt8Header(), UInt8()),
+			Payload:      SliceView[uint8](createSlice[uint8](1, 257)),
 			Expected:     nil,
 			ExpectsError: true,
 		},

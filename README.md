@@ -62,11 +62,11 @@ func main() {
 				func(s *Example) map[string]uint8 { return s.Grades },
 			),
 		).
-		Array(
-			parco.ArrayField[Example, string](
+		Slice(
+			parco.SliceFiel d[Example, string](
 				parco.UInt8Header(),  // up to 255 items
 				parco.SmallVarchar(), // each item's type
-				func(e *Example, friends parco.Slice[string]) { e.Friends = friends },
+				func(e *Example, friends parco.SliceView[string]) { e.Friends = friends },
 				func(e *Example) parco.Slice[string] { return e.Friends },
 			),
 		).
@@ -135,7 +135,7 @@ func main () {
 
 ```
 
-#### Array of structs
+#### Slice of structs
 
 
 ```go
@@ -157,7 +157,7 @@ func main() {
 			func(a *Animal, age uint8) { a.Age = age },
 		)
 
-	animalsType := parco.Array[Animal](
+	animalsType := parco.Slice[Animal](
 		intType,
 		parco.Struct[Animal](animalBuilder),
 	)
@@ -173,7 +173,7 @@ func main() {
 		},
 	}
 
-	_ = animalsType.Compile(parco.Slice[Animal](payload), buf)
+	_ = animalsType.Compile(parco.SliceView[Animal](payload), buf)
 
 	log.Println(buf.Bytes())
 

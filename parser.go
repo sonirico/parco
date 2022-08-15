@@ -46,7 +46,7 @@ func (p *Parser[T]) Struct(field fieldParser[T]) *Parser[T] {
 	return p.register(field)
 }
 
-func (p *Parser[T]) Array(field fieldParser[T]) *Parser[T] {
+func (p *Parser[T]) Slice(field fieldParser[T]) *Parser[T] {
 	return p.register(field)
 }
 

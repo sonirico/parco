@@ -47,11 +47,11 @@ func newExampleParser(factory parco.Factory[Example]) *parco.Parser[Example] {
 		UInt8(func(s *Example, lifeSense uint8) {
 			s.LifeSense = lifeSense
 		}).
-		Array(
-			parco.ArrayFieldSetter(
+		Slice(
+			parco.SliceFieldSetter(
 				parco.UInt8Header(),
 				parco.SmallVarchar(),
-				func(s *Example, friends parco.Slice[string]) {
+				func(s *Example, friends parco.SliceView[string]) {
 					s.Friends = friends
 				},
 			),
