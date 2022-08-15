@@ -8,14 +8,9 @@ type (
 		CompilerType[T]
 	}
 
-	structType[T any] struct {
-		ParserType[T]
-		CompilerType[T]
-	}
-
 	structField[T, U any] struct {
 		id     string
-		inner  structType[U]
+		inner  StructType[U]
 		setter Setter[T, U]
 		getter Getter[T, U]
 	}
@@ -46,10 +41,7 @@ func newStructField[T, U any](
 	parser ParserType[U],
 ) Field[T, U] {
 	return structField[T, U]{
-		inner: structType[U]{
-			ParserType:   parser,
-			CompilerType: compiler,
-		},
+		inner:  StructParco[U](parser, compiler),
 		setter: setter,
 		getter: getter,
 	}

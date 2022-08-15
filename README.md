@@ -121,6 +121,8 @@ func main() {
 
 ### Single types
 
+#### Integer
+
 ```go
 func main () {
 	intType := parco.Int(binary.LittleEndian)
@@ -129,7 +131,64 @@ func main () {
 	n, _ := intType.Parse(buf)
 	log.Println(n == math.MaxInt)
 }
+
+
 ```
+
+#### Array of structs
+
+
+```go
+type (
+	Animal struct {
+		Age    uint8
+		Specie string
+	}
+)
+
+func main() {
+	animalBuilder := parco.Builder[Animal](parco.ObjectFactory[Animal]()).
+		SmallVarchar(
+			func(a *Animal) string { return a.Specie },
+			func(a *Animal, specie string) { a.Specie = specie },
+		).
+		UInt8(
+			func(a *Animal) uint8 { return a.Age },
+			func(a *Animal, age uint8) { a.Age = age },
+		)
+
+	animalsType := parco.Array[Animal](
+		intType,
+		parco.Struct[Animal](animalBuilder),
+	)
+
+	payload := []Animal{
+		{
+			Specie: "cat",
+			Age:    32,
+		},
+		{
+			Specie: "dog",
+			Age:    12,
+		},
+	}
+
+	_ = animalsType.Compile(parco.Slice[Animal](payload), buf)
+
+	log.Println(buf.Bytes())
+
+	res, _ := animalsType.Parse(buf)
+
+	log.Println(res.Len())
+
+	_ = res.Range(func(animal Animal) error {
+		log.Println(animal)
+		return nil
+	})
+}
+```
+
+---
 
 ### Supported fields
 
