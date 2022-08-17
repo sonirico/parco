@@ -63,7 +63,7 @@ func main() {
 			),
 		).
 		Slice(
-			parco.SliceFiel d[Example, string](
+			parco.SliceField[Example, string](
 				parco.UInt8Header(),  // up to 255 items
 				parco.SmallVarchar(), // each item's type
 				func(e *Example, friends parco.SliceView[string]) { e.Friends = friends },
@@ -261,12 +261,10 @@ Msgpack_Compile/large_size
 Msgpack_Compile/large_size-12                      6274            191314 ns/op             10135 payload_bytes/op        37432 B/op       2007 allocs/op
 ```
 
-## TODO
+## Roadmap
 
 - Support for all primitive types:
   - Float32/64
-  - Optional / Pointer
-  
 - Extend interface to include version
 - Static code generation
 - Replace `encoding/binary` usage by faster implementations (`WriteByte`)
