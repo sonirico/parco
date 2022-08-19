@@ -12,7 +12,7 @@ func (s StructType[T]) ByteLength() int {
 }
 
 func Struct[T any](b ModelBuilder[T]) StructType[T] {
-	parser, compiler := b.ParCo()
+	parser, compiler := b.Parco()
 	return StructParco[T](parser, compiler)
 }
 

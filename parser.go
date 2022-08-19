@@ -50,6 +50,10 @@ func (p *Parser[T]) Slice(field fieldParser[T]) *Parser[T] {
 	return p.register(field)
 }
 
+func (p *Parser[T]) Array(field fieldParser[T]) *Parser[T] {
+	return p.register(field)
+}
+
 func (p *Parser[T]) Map(field fieldParser[T]) *Parser[T] {
 	return p.register(field)
 }

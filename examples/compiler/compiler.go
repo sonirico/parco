@@ -22,6 +22,7 @@ type (
 		EvenOrOdd bool
 		Pet       Animal
 		Pointer   *int
+		Flags     [5]bool
 	}
 )
 
@@ -76,6 +77,15 @@ func main() {
 				parco.Int(binary.LittleEndian),
 				func(e *Example) *int { return e.Pointer },
 			),
+		).
+		Array(
+			parco.ArrayFieldGetter[Example, bool](
+				5,
+				parco.Bool(),
+				func(e *Example) parco.SliceView[bool] {
+					return e.Flags[:]
+				},
+			),
 		)
 
 	ex := Example{
@@ -92,6 +102,7 @@ func main() {
 			Specie: "cat",
 		},
 		Pointer: parco.Ptr(1),
+		Flags:   [5]bool{true, false, false, true, false},
 	}
 
 	output := bytes.NewBuffer(nil)

@@ -23,6 +23,7 @@ type (
 		EvenOrOdd bool
 		Pet       Animal
 		Pointer   *int
+		Flags     [5]bool
 	}
 )
 
@@ -83,7 +84,19 @@ func main() {
 				func(e *Example) *int { return e.Pointer },
 			),
 		).
-		ParCo()
+		Array(
+			parco.ArrayField[Example, bool](
+				5,
+				parco.Bool(),
+				func(e *Example, flags parco.SliceView[bool]) {
+					copy(e.Flags[:], flags)
+				},
+				func(e *Example) parco.SliceView[bool] {
+					return e.Flags[:]
+				},
+			),
+		).
+		Parco()
 
 	ex := Example{
 		Greet:     "hey",
@@ -93,6 +106,7 @@ func main() {
 		EvenOrOdd: true,
 		Pet:       Animal{Age: 3, Specie: "cat"},
 		Pointer:   parco.Ptr(73),
+		Flags:     [5]bool{true, false, false, true, false},
 	}
 
 	output := bytes.NewBuffer(nil)

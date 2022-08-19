@@ -28,6 +28,7 @@ type (
 		EvenOrOdd bool
 		Pet       Animal
 		Pointer   *int
+		Flags     [5]bool
 	}
 )
 
@@ -67,7 +68,7 @@ func main() {
 				parco.UInt8Header(),  // up to 255 items
 				parco.SmallVarchar(), // each item's type
 				func(e *Example, friends parco.SliceView[string]) { e.Friends = friends },
-				func(e *Example) parco.Slice[string] { return e.Friends },
+				func(e *Example) parco.SliceView[string] { return e.Friends },
 			),
 		).
 		Bool(
@@ -88,7 +89,19 @@ func main() {
 				func(e *Example) *int { return e.Pointer },
 			),
 		).
-		ParCo()
+		Array(
+			parco.ArrayField[Example, bool](
+				5,
+				parco.Bool(),
+				func(e *Example, flags parco.SliceView[bool]) {
+					copy(e.Flags[:], flags)
+				},
+				func(e *Example) parco.SliceView[bool] {
+					return e.Flags[:]
+				},
+			),
+		).
+		Parco()
 
 	ex := Example{
 		Greet:     "hey",
@@ -98,6 +111,7 @@ func main() {
 		EvenOrOdd: true,
 		Pet:       Animal{Age: 3, Specie: "cat"},
 		Pointer:   parco.Ptr(73),
+		Flags:     [5]bool{true, false, false, true, false},
 	}
 
 	output := bytes.NewBuffer(nil)
@@ -117,6 +131,7 @@ func main() {
 		panic("not equals")
 	}
 }
+
 ```
 
 ### Single types
@@ -215,6 +230,7 @@ func main() {
 | bytes (blob)          | ✅      | dyn                          |
 | map                   | ✅      | -                            |
 | slice                 | ✅      | -                            |
+| array (fixed)         | ✅      | -                            |
 | struct                | ✅      | -                            |
 | time.Time             | 👷🚧   | ?                            |
 | optional[T] (pointer) | ✅      | 1 + inner size               |

@@ -35,7 +35,7 @@ func (b ModelBuilder[T]) Parse(r io.Reader) (T, error) {
 	return b.parser.Parse(r)
 }
 
-func (b ModelBuilder[T]) ParCo() (*Parser[T], *Compiler[T]) {
+func (b ModelBuilder[T]) Parco() (*Parser[T], *Compiler[T]) {
 	return b.parser, b.compiler
 }
 
@@ -54,6 +54,12 @@ func (b ModelBuilder[T]) Map(field fieldBuilder[T]) ModelBuilder[T] {
 func (b ModelBuilder[T]) Slice(field fieldBuilder[T]) ModelBuilder[T] {
 	b.parser.Slice(field)
 	b.compiler.Slice(field)
+	return b
+}
+
+func (b ModelBuilder[T]) Array(field fieldBuilder[T]) ModelBuilder[T] {
+	b.parser.Array(field)
+	b.compiler.Array(field)
 	return b
 }
 

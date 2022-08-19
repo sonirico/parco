@@ -15,7 +15,6 @@ type (
 		length int
 		header IntType
 		inner  Type[T]
-		pool   Pooler
 	}
 )
 
@@ -28,22 +27,15 @@ func (t SliceType[T]) Parse(r io.Reader) (res Iterable[T], err error) {
 		length int
 	)
 	length, err = t.header.Parse(r)
-	t.length = length
 	if err != nil {
 		return nil, err
 	}
 
-	values := make([]T, t.length)
+	arrType := Array[T](length, t.inner)
 
-	// TODO: Consider using ParseBytes in order to allocate 1 []byte only
-	for i := 0; i < t.length; i++ {
-		values[i], err = t.inner.Parse(r)
-		if err != nil {
-			return
-		}
-	}
+	t.length = length
 
-	return SliceView[T](values), nil
+	return arrType.Parse(r)
 }
 
 func (t SliceType[T]) Compile(x Iterable[T], w io.Writer) error {
@@ -53,18 +45,14 @@ func (t SliceType[T]) Compile(x Iterable[T], w io.Writer) error {
 		return err
 	}
 
-	return x.Range(func(x T) error {
-		if err := t.inner.Compile(x, w); err != nil {
-			return err
-		}
-		return nil
-	})
+	arrType := Array[T](t.length, t.inner)
+
+	return arrType.Compile(x, w)
 }
 
 func Slice[T any](header IntType, inner Type[T]) SliceType[T] {
 	return SliceType[T]{
 		header: header,
 		inner:  inner,
-		pool:   SinglePool,
 	}
 }

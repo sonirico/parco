@@ -37,6 +37,10 @@ func (c *Compiler[T]) Slice(field fieldCompiler[T]) *Compiler[T] {
 	return c.register(field)
 }
 
+func (c *Compiler[T]) Array(field fieldCompiler[T]) *Compiler[T] {
+	return c.register(field)
+}
+
 func (c *Compiler[T]) Map(field fieldCompiler[T]) *Compiler[T] {
 	return c.register(field)
 }

@@ -10,9 +10,80 @@ import (
 
 var (
 	data = []byte{
-		3, 104, 101, 121, 42, 4, 7, 64, 98, 111, 108, 105, 114, 105, 8, 64, 100, 97, 110, 105, 114, 111, 100,
-		9, 64, 101, 110, 114, 105, 103, 108, 101, 115, 4, 64, 102, 51, 114, 2, 4, 109, 97, 116, 104, 5, 7, 101,
-		110, 103, 108, 105, 115, 104, 6, 1, 3, 99, 97, 116, 3, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+		3,
+		104,
+		101,
+		121,
+		42,
+		4,
+		7,
+		64,
+		98,
+		111,
+		108,
+		105,
+		114,
+		105,
+		8,
+		64,
+		100,
+		97,
+		110,
+		105,
+		114,
+		111,
+		100,
+		9,
+		64,
+		101,
+		110,
+		114,
+		105,
+		103,
+		108,
+		101,
+		115,
+		4,
+		64,
+		102,
+		51,
+		114,
+		2,
+		4,
+		109,
+		97,
+		116,
+		104,
+		5,
+		7,
+		101,
+		110,
+		103,
+		108,
+		105,
+		115,
+		104,
+		6,
+		1,
+		3,
+		99,
+		97,
+		116,
+		3,
+		1,
+		1,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		1,
+		0,
+		0,
+		1,
+		0,
 	}
 )
 
@@ -30,6 +101,7 @@ type (
 		EvenOrOdd bool
 		Pet       Animal
 		Pointer   *int
+		Flags     [5]bool
 	}
 )
 
@@ -84,6 +156,15 @@ func newExampleParser(factory parco.Factory[Example]) *parco.Parser[Example] {
 				parco.Int(binary.LittleEndian),
 				func(e *Example, value *int) { e.Pointer = value },
 			),
+		).
+		Array(
+			parco.ArrayFieldSetter[Example, bool](
+				5,
+				parco.Bool(),
+				func(e *Example, flags parco.SliceView[bool]) {
+					copy(e.Flags[:], flags)
+				},
+			),
 		)
 }
 
@@ -105,6 +186,7 @@ func parseBytes(data []byte) {
 	log.Println(parsed.EvenOrOdd)
 	log.Println(parsed.Pet)
 	log.Println(parsed.Pointer, *parsed.Pointer)
+	log.Println(parsed.Flags)
 }
 
 func parseStream(data []byte) {
@@ -124,6 +206,7 @@ func parseStream(data []byte) {
 	log.Println(parsed.EvenOrOdd)
 	log.Println(parsed.Pet)
 	log.Println(parsed.Pointer, *parsed.Pointer)
+	log.Println(parsed.Flags)
 }
 
 func parseWithPool(data []byte) {
@@ -156,6 +239,7 @@ func parseWithPool(data []byte) {
 	log.Println(parsed.EvenOrOdd)
 	log.Println(parsed.Pet)
 	log.Println(parsed.Pointer, *parsed.Pointer)
+	log.Println(parsed.Flags)
 	// ....
 
 	// Release model
