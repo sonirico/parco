@@ -21,16 +21,23 @@ type (
 	}
 
 	Example struct {
-		Greet     string
-		LifeSense uint8
-		Friends   []string
-		Grades    map[string]uint8
-		EvenOrOdd bool
-		Pet       Animal
-		Pointer   *int
-		Flags     [5]bool
+		Greet              string
+		LifeSense          uint8
+		Friends            []string
+		Grades             map[string]uint8
+		EvenOrOdd          bool
+		Pet                Animal
+		Pointer            *int
+		Flags              [5]bool
+		Balance            float32
+		MorePreciseBalance float64
 	}
 )
+
+func (e Example) String() string {
+	bts, _ := json.MarshalIndent(e, "", "\t")
+	return string(bts)
+}
 
 func main() {
 	animalBuilder := parco.Builder[Animal](parco.ObjectFactory[Animal]()).
@@ -101,17 +108,37 @@ func main() {
 				},
 			),
 		).
+		Float32(
+			binary.LittleEndian,
+			func(e *Example) float32 {
+				return e.Balance
+			},
+			func(e *Example, balance float32) {
+				e.Balance = balance
+			},
+		).
+		Float64(
+			binary.LittleEndian,
+			func(e *Example) float64 {
+				return e.MorePreciseBalance
+			},
+			func(e *Example, balance float64) {
+				e.MorePreciseBalance = balance
+			},
+		).
 		Parco()
 
 	ex := Example{
-		Greet:     "hey",
-		LifeSense: 42,
-		Grades:    map[string]uint8{"math": 5, "english": 6},
-		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
-		EvenOrOdd: true,
-		Pet:       Animal{Age: 3, Specie: "cat"},
-		Pointer:   parco.Ptr(73),
-		Flags:     [5]bool{true, false, false, true, false},
+		Greet:              "hey",
+		LifeSense:          42,
+		Grades:             map[string]uint8{"math": 5, "english": 6},
+		Friends:            []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
+		EvenOrOdd:          true,
+		Pet:                Animal{Age: 3, Specie: "cat"},
+		Pointer:            parco.Ptr(73),
+		Flags:              [5]bool{true, false, false, true, false},
+		Balance:            234.987,
+		MorePreciseBalance: 1234243.5678,
 	}
 
 	output := bytes.NewBuffer(nil)
@@ -126,6 +153,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Println(parsed.String())
 
 	if !reflect.DeepEqual(ex, parsed) {
 		panic("not equals")
@@ -218,8 +247,8 @@ func main() {
 | uint32                | ✅      | 4                            |
 | int64                 | ✅      | 8                            |
 | uint64                | ✅      | 8                            |
-| float32               | 👷🚧   | 4                            |
-| float64               | 👷🚧   | 8                            |
+| float32               | ✅      | 4                            |
+| float64               | ✅      | 8                            |
 | int                   | ✅      | 4/8                          |
 | bool                  | ✅      | 1                            |
 | small varchar         | ✅      | dyn (up to 255)              |
@@ -243,45 +272,41 @@ For fully functional examples showing the whole API, refer to [Examples](https:/
 ```shell
 make bench
 
-goos: linux
+goos: darwin
 goarch: amd64
 cpu: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
-
 ParcoAlloc_Compile
 ParcoAlloc_Compile/small_size
-ParcoAlloc_Compile/small_size-12                 674432              1777 ns/op                78.00 payload_bytes/op       200 B/op          3 allocs/op
+ParcoAlloc_Compile/small_size-12    276934       4015 ns/op      91.00 payload_bytes/op    237 B/op     5 allocs/op
 ParcoAlloc_Compile/medium_size
-ParcoAlloc_Compile/medium_size-12                 87168             13190 ns/op               729.0 payload_bytes/op        200 B/op          3 allocs/op
+ParcoAlloc_Compile/medium_size-12    48273      24906 ns/op     742.0 payload_bytes/op     239 B/op     5 allocs/op
 ParcoAlloc_Compile/large_size
-ParcoAlloc_Compile/large_size-12                   8985            136822 ns/op              8110 payload_bytes/op          200 B/op          3 allocs/op
+ParcoAlloc_Compile/large_size-12      4705     247203 ns/op    8123 payload_bytes/op       245 B/op     5 allocs/op
 ParcoDiscard_Compile
 ParcoDiscard_Compile/small_size
-ParcoDiscard_Compile/small_size-12               661446              1656 ns/op                78.00 payload_bytes/op       200 B/op          3 allocs/op
+ParcoDiscard_Compile/small_size-12  322285       3741 ns/op      91.00 payload_bytes/op    238 B/op     5 allocs/op
 ParcoDiscard_Compile/medium_size
-ParcoDiscard_Compile/medium_size-12               93610             14262 ns/op               729.0 payload_bytes/op        200 B/op          3 allocs/op
+ParcoDiscard_Compile/medium_size-12  50703      23336 ns/op     742.0 payload_bytes/op     238 B/op     5 allocs/op
 ParcoDiscard_Compile/large_size
-ParcoDiscard_Compile/large_size-12                 9838            115526 ns/op              8110 payload_bytes/op          200 B/op          3 allocs/op
+ParcoDiscard_Compile/large_size-12    5406     220967 ns/op    8123 payload_bytes/op       241 B/op     5 allocs/op
 Json_Compile
 Json_Compile/small_size
-Json_Compile/small_size-12                       378963              2948 ns/op               200.0 payload_bytes/op       1234 B/op         26 allocs/op
+Json_Compile/small_size-12          213540       5410 ns/op     270.0 payload_bytes/op    1330 B/op    26 allocs/op
 Json_Compile/medium_size
-Json_Compile/medium_size-12                       42246             30289 ns/op              1610 payload_bytes/op        10241 B/op        206 allocs/op
+Json_Compile/medium_size-12          23980      49912 ns/op    1680 payload_bytes/op     10256 B/op   206 allocs/op
 Json_Compile/large_size
-Json_Compile/large_size-12                         3187            343736 ns/op             16528 payload_bytes/op       101227 B/op       2006 allocs/op
+Json_Compile/large_size-12            2014     581209 ns/op   16598 payload_bytes/op    101265 B/op  2006 allocs/op
 Msgpack_Compile
 Msgpack_Compile/small_size
-Msgpack_Compile/small_size-12                    487891              2525 ns/op               119.0 payload_bytes/op        490 B/op         24 allocs/op
+Msgpack_Compile/small_size-12       242005       4760 ns/op     155.0 payload_bytes/op     762 B/op    25 allocs/op
 Msgpack_Compile/medium_size
-Msgpack_Compile/medium_size-12                    55425             19528 ns/op               955.0 payload_bytes/op       4053 B/op        207 allocs/op
+Msgpack_Compile/medium_size-12       33638      35485 ns/op     991.0 payload_bytes/op    4069 B/op   207 allocs/op
 Msgpack_Compile/large_size
-Msgpack_Compile/large_size-12                      6274            191314 ns/op             10135 payload_bytes/op        37432 B/op       2007 allocs/op
+Msgpack_Compile/large_size-12         3277     357921 ns/op   10171 payload_bytes/op     37448 B/op  2007 allocs/op
 ```
 
 ## Roadmap
 
-- Support for all primitive types:
-  - Float32/64
-- Extend interface to include version
-- Static code generation
-- Replace `encoding/binary` usage by faster implementations (`WriteByte`)
-- Custom `Reader` and `Writer` interfaces to implement single byte ops
+- Static code generation.
+- Replace `encoding/binary` usage by faster implementations, such as `WriteByte` in order to achieve a zero alloc implementation.
+- Custom `Reader` and `Writer` interfaces to implement single byte ops.

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"log"
 	"reflect"
 
@@ -16,16 +17,23 @@ type (
 	}
 
 	Example struct {
-		Greet     string
-		LifeSense uint8
-		Friends   []string
-		Grades    map[string]uint8
-		EvenOrOdd bool
-		Pet       Animal
-		Pointer   *int
-		Flags     [5]bool
+		Greet              string
+		LifeSense          uint8
+		Friends            []string
+		Grades             map[string]uint8
+		EvenOrOdd          bool
+		Pet                Animal
+		Pointer            *int
+		Flags              [5]bool
+		Balance            float32
+		MorePreciseBalance float64
 	}
 )
+
+func (e Example) String() string {
+	bts, _ := json.MarshalIndent(e, "", "\t")
+	return string(bts)
+}
 
 func main() {
 	animalBuilder := parco.Builder[Animal](parco.ObjectFactory[Animal]()).
@@ -96,17 +104,37 @@ func main() {
 				},
 			),
 		).
+		Float32(
+			binary.LittleEndian,
+			func(e *Example) float32 {
+				return e.Balance
+			},
+			func(e *Example, balance float32) {
+				e.Balance = balance
+			},
+		).
+		Float64(
+			binary.LittleEndian,
+			func(e *Example) float64 {
+				return e.MorePreciseBalance
+			},
+			func(e *Example, balance float64) {
+				e.MorePreciseBalance = balance
+			},
+		).
 		Parco()
 
 	ex := Example{
-		Greet:     "hey",
-		LifeSense: 42,
-		Grades:    map[string]uint8{"math": 5, "english": 6},
-		Friends:   []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
-		EvenOrOdd: true,
-		Pet:       Animal{Age: 3, Specie: "cat"},
-		Pointer:   parco.Ptr(73),
-		Flags:     [5]bool{true, false, false, true, false},
+		Greet:              "hey",
+		LifeSense:          42,
+		Grades:             map[string]uint8{"math": 5, "english": 6},
+		Friends:            []string{"@boliri", "@danirod", "@enrigles", "@f3r"},
+		EvenOrOdd:          true,
+		Pet:                Animal{Age: 3, Specie: "cat"},
+		Pointer:            parco.Ptr(73),
+		Flags:              [5]bool{true, false, false, true, false},
+		Balance:            234.987,
+		MorePreciseBalance: 1234243.5678,
 	}
 
 	output := bytes.NewBuffer(nil)
@@ -121,6 +149,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Println(parsed.String())
 
 	if !reflect.DeepEqual(ex, parsed) {
 		panic("not equals")

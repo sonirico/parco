@@ -114,6 +114,14 @@ func (p *Parser[T]) Int(order binary.ByteOrder, setter Setter[T, int]) *Parser[T
 	return p.register(IntFieldSetter[T](Int(order), setter))
 }
 
+func (p *Parser[T]) Float32(order binary.ByteOrder, setter Setter[T, float32]) *Parser[T] {
+	return p.register(Float32FieldSetter[T](Float32(order), setter))
+}
+
+func (p *Parser[T]) Float64(order binary.ByteOrder, setter Setter[T, float64]) *Parser[T] {
+	return p.register(Float64FieldSetter[T](Float64(order), setter))
+}
+
 func (p *Parser[T]) Option(f fieldParser[T]) *Parser[T] {
 	return p.register(f)
 }

@@ -105,6 +105,14 @@ func (c *Compiler[T]) Int(order binary.ByteOrder, getter Getter[T, int]) *Compil
 	return c.register(IntFieldGetter[T](Int(order), getter))
 }
 
+func (c *Compiler[T]) Float32(order binary.ByteOrder, getter Getter[T, float32]) *Compiler[T] {
+	return c.register(Float32FieldGetter[T](Float32(order), getter))
+}
+
+func (c *Compiler[T]) Float64(order binary.ByteOrder, getter Getter[T, float64]) *Compiler[T] {
+	return c.register(Float64FieldGetter[T](Float64(order), getter))
+}
+
 func (c *Compiler[T]) Option(f fieldCompiler[T]) *Compiler[T] {
 	return c.register(f)
 }

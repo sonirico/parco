@@ -15,14 +15,16 @@ type (
 	}
 
 	Example struct {
-		Greet     string
-		LifeSense uint8
-		Friends   []string
-		Grades    map[string]uint8
-		EvenOrOdd bool
-		Pet       Animal
-		Pointer   *int
-		Flags     [5]bool
+		Greet              string
+		LifeSense          uint8
+		Friends            []string
+		Grades             map[string]uint8
+		EvenOrOdd          bool
+		Pet                Animal
+		Pointer            *int
+		Flags              [5]bool
+		Balance            float32
+		MorePreciseBalance float64
 	}
 )
 
@@ -86,6 +88,18 @@ func main() {
 					return e.Flags[:]
 				},
 			),
+		).
+		Float32(
+			binary.LittleEndian,
+			func(e *Example) float32 {
+				return e.Balance
+			},
+		).
+		Float64(
+			binary.LittleEndian,
+			func(e *Example) float64 {
+				return e.MorePreciseBalance
+			},
 		)
 
 	ex := Example{
@@ -101,8 +115,10 @@ func main() {
 			Age:    3,
 			Specie: "cat",
 		},
-		Pointer: parco.Ptr(1),
-		Flags:   [5]bool{true, false, false, true, false},
+		Pointer:            parco.Ptr(1),
+		Flags:              [5]bool{true, false, false, true, false},
+		Balance:            234.987,
+		MorePreciseBalance: 1234243.5678,
 	}
 
 	output := bytes.NewBuffer(nil)

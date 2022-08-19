@@ -288,6 +288,58 @@ func IntFieldSetter[T any](
 	return IntField[T](tp, nil, setter)
 }
 
+func Float32Field[T any](
+	tp Type[float32],
+	getter Getter[T, float32],
+	setter Setter[T, float32],
+) Field[T, float32] {
+	return FixedField[T, float32]{
+		Type:   tp,
+		Setter: setter,
+		Getter: getter,
+	}
+}
+
+func Float32FieldGetter[T any](
+	tp Type[float32],
+	getter Getter[T, float32],
+) Field[T, float32] {
+	return Float32Field[T](tp, getter, nil)
+}
+
+func Float32FieldSetter[T any](
+	tp Type[float32],
+	setter Setter[T, float32],
+) Field[T, float32] {
+	return Float32Field[T](tp, nil, setter)
+}
+
+func Float64Field[T any](
+	tp Type[float64],
+	getter Getter[T, float64],
+	setter Setter[T, float64],
+) Field[T, float64] {
+	return FixedField[T, float64]{
+		Type:   tp,
+		Setter: setter,
+		Getter: getter,
+	}
+}
+
+func Float64FieldGetter[T any](
+	tp Type[float64],
+	getter Getter[T, float64],
+) Field[T, float64] {
+	return Float64Field[T](tp, getter, nil)
+}
+
+func Float64FieldSetter[T any](
+	tp Type[float64],
+	setter Setter[T, float64],
+) Field[T, float64] {
+	return Float64Field[T](tp, nil, setter)
+}
+
 func SkipField[T any](
 	tp Type[any],
 ) Field[T, any] {

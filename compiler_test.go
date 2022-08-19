@@ -2,6 +2,7 @@ package parco
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"github.com/vmihailenco/msgpack/v5"
 	"math"
@@ -16,12 +17,14 @@ type compileFuncType func(t TestStruct) (int, error)
 type compileFuncFactory func(t TestStruct) compileFuncType
 
 type TestStruct struct {
-	Name string
-	Str  string           `json:"str"`
-	Num  uint16           `json:"num"`
-	Arr  []uint16         `json:"arr"`
-	Map  map[string]uint8 `json:"map"`
-	Bool bool             `json:"bool"`
+	Name    string
+	Str     string           `json:"str"`
+	Num     uint16           `json:"num"`
+	Arr     []uint16         `json:"arr"`
+	Map     map[string]uint8 `json:"map"`
+	Bool    bool             `json:"bool"`
+	Float32 float32          `json:"float32"`
+	Float64 float64          `json:"float64"`
 }
 
 func fillSeq(le int) []uint16 {
@@ -67,33 +70,42 @@ func newCompiler(arrLen int) *Compiler[TestStruct] {
 			func(ts *TestStruct) map[string]uint8 {
 				return ts.Map
 			},
-		))
+		)).
+		Bool(func(ts *TestStruct) bool { return ts.Bool }).
+		Float32(binary.LittleEndian, func(ts *TestStruct) float32 { return ts.Float32 }).
+		Float64(binary.LittleEndian, func(ts *TestStruct) float64 { return ts.Float64 })
 }
 
 var tests = []TestStruct{
 	{
-		Name: "small size",
-		Str:  "oh hi Mark",
-		Num:  42,
-		Arr:  fillSeq(10),
-		Map:  fillMap(10),
-		Bool: true,
+		Name:    "small size",
+		Str:     "oh hi Mark",
+		Num:     42,
+		Arr:     fillSeq(10),
+		Map:     fillMap(10),
+		Bool:    true,
+		Float32: math.MaxFloat32,
+		Float64: math.MaxFloat64,
 	},
 	{
-		Name: "medium size",
-		Str:  strings.Repeat("oh hi Mark! ", 10),
-		Num:  42134,
-		Arr:  fillSeq(100),
-		Map:  fillMap(100),
-		Bool: true,
+		Name:    "medium size",
+		Str:     strings.Repeat("oh hi Mark! ", 10),
+		Num:     42134,
+		Arr:     fillSeq(100),
+		Map:     fillMap(100),
+		Bool:    true,
+		Float32: math.MaxFloat32,
+		Float64: math.MaxFloat64,
 	},
 	{
-		Name: "large size",
-		Str:  strings.Repeat("oh hi Mark! ", 100),
-		Num:  math.MaxUint16,
-		Arr:  fillSeq(1000),
-		Map:  fillMap(1000),
-		Bool: true,
+		Name:    "large size",
+		Str:     strings.Repeat("oh hi Mark! ", 100),
+		Num:     math.MaxUint16,
+		Arr:     fillSeq(1000),
+		Map:     fillMap(1000),
+		Bool:    true,
+		Float32: math.MaxFloat32,
+		Float64: math.MaxFloat64,
 	},
 }
 

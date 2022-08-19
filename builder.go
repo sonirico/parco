@@ -147,6 +147,18 @@ func (b ModelBuilder[T]) Int(order binary.ByteOrder, getter Getter[T, int], sett
 	return b
 }
 
+func (b ModelBuilder[T]) Float32(order binary.ByteOrder, getter Getter[T, float32], setter Setter[T, float32]) ModelBuilder[T] {
+	b.parser.Float32(order, setter)
+	b.compiler.Float32(order, getter)
+	return b
+}
+
+func (b ModelBuilder[T]) Float64(order binary.ByteOrder, getter Getter[T, float64], setter Setter[T, float64]) ModelBuilder[T] {
+	b.parser.Float64(order, setter)
+	b.compiler.Float64(order, getter)
+	return b
+}
+
 func (b ModelBuilder[T]) Option(field fieldBuilder[T]) ModelBuilder[T] {
 	b.parser.Option(field)
 	b.compiler.Option(field)

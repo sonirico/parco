@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"log"
 
 	"github.com/sonirico/parco"
@@ -49,12 +50,6 @@ var (
 		51,
 		114,
 		2,
-		4,
-		109,
-		97,
-		116,
-		104,
-		5,
 		7,
 		101,
 		110,
@@ -64,6 +59,12 @@ var (
 		115,
 		104,
 		6,
+		4,
+		109,
+		97,
+		116,
+		104,
+		5,
 		1,
 		3,
 		99,
@@ -84,6 +85,18 @@ var (
 		0,
 		1,
 		0,
+		172,
+		252,
+		106,
+		67,
+		63,
+		87,
+		91,
+		145,
+		67,
+		213,
+		50,
+		65,
 	}
 )
 
@@ -94,16 +107,23 @@ type (
 	}
 
 	Example struct {
-		Greet     string
-		LifeSense uint8
-		Friends   []string
-		Grades    map[string]uint8
-		EvenOrOdd bool
-		Pet       Animal
-		Pointer   *int
-		Flags     [5]bool
+		Greet              string
+		LifeSense          uint8
+		Friends            []string
+		Grades             map[string]uint8
+		EvenOrOdd          bool
+		Pet                Animal
+		Pointer            *int
+		Flags              [5]bool
+		Balance            float32
+		MorePreciseBalance float64
 	}
 )
+
+func (e Example) String() string {
+	bts, _ := json.MarshalIndent(e, "", "\t")
+	return string(bts)
+}
 
 func newAnimalParser() *parco.Parser[Animal] {
 	return parco.ParserModel[Animal](parco.ObjectFactory[Animal]()).
@@ -165,6 +185,18 @@ func newExampleParser(factory parco.Factory[Example]) *parco.Parser[Example] {
 					copy(e.Flags[:], flags)
 				},
 			),
+		).
+		Float32(
+			binary.LittleEndian,
+			func(e *Example, balance float32) {
+				e.Balance = balance
+			},
+		).
+		Float64(
+			binary.LittleEndian,
+			func(e *Example, balance float64) {
+				e.MorePreciseBalance = balance
+			},
 		)
 }
 
@@ -179,14 +211,7 @@ func parseBytes(data []byte) {
 		log.Fatal(err)
 	}
 
-	log.Println(parsed.Greet)
-	log.Println(parsed.LifeSense)
-	log.Println(parsed.Friends)
-	log.Println(parsed.Grades)
-	log.Println(parsed.EvenOrOdd)
-	log.Println(parsed.Pet)
-	log.Println(parsed.Pointer, *parsed.Pointer)
-	log.Println(parsed.Flags)
+	log.Println(parsed.String())
 }
 
 func parseStream(data []byte) {
@@ -199,14 +224,7 @@ func parseStream(data []byte) {
 		log.Fatal(err)
 	}
 
-	log.Println(parsed.Greet)
-	log.Println(parsed.LifeSense)
-	log.Println(parsed.Friends)
-	log.Println(parsed.Grades)
-	log.Println(parsed.EvenOrOdd)
-	log.Println(parsed.Pet)
-	log.Println(parsed.Pointer, *parsed.Pointer)
-	log.Println(parsed.Flags)
+	log.Println(parsed.String())
 }
 
 func parseWithPool(data []byte) {
@@ -232,14 +250,7 @@ func parseWithPool(data []byte) {
 	}
 
 	// DO some work
-	log.Println(parsed.Greet)
-	log.Println(parsed.LifeSense)
-	log.Println(parsed.Friends)
-	log.Println(parsed.Grades)
-	log.Println(parsed.EvenOrOdd)
-	log.Println(parsed.Pet)
-	log.Println(parsed.Pointer, *parsed.Pointer)
-	log.Println(parsed.Flags)
+	log.Println(parsed.String())
 	// ....
 
 	// Release model
