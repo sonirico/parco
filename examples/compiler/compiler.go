@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"log"
+	"time"
 
 	"github.com/sonirico/parco"
 )
@@ -25,6 +26,7 @@ type (
 		Flags              [5]bool
 		Balance            float32
 		MorePreciseBalance float64
+		CreatedAt          time.Time
 	}
 )
 
@@ -100,6 +102,11 @@ func main() {
 			func(e *Example) float64 {
 				return e.MorePreciseBalance
 			},
+		).
+		TimeUTC(
+			func(e *Example) time.Time {
+				return e.CreatedAt
+			},
 		)
 
 	ex := Example{
@@ -119,6 +126,7 @@ func main() {
 		Flags:              [5]bool{true, false, false, true, false},
 		Balance:            234.987,
 		MorePreciseBalance: 1234243.5678,
+		CreatedAt:          time.Now().UTC(),
 	}
 
 	output := bytes.NewBuffer(nil)

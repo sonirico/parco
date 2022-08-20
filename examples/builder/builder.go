@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"reflect"
+	"time"
 
 	"github.com/sonirico/parco"
 )
@@ -27,6 +28,7 @@ type (
 		Flags              [5]bool
 		Balance            float32
 		MorePreciseBalance float64
+		CreatedAt          time.Time
 	}
 )
 
@@ -122,6 +124,14 @@ func main() {
 				e.MorePreciseBalance = balance
 			},
 		).
+		TimeUTC(
+			func(e *Example) time.Time {
+				return e.CreatedAt
+			},
+			func(e *Example, createdAt time.Time) {
+				e.CreatedAt = createdAt
+			},
+		).
 		Parco()
 
 	ex := Example{
@@ -135,6 +145,7 @@ func main() {
 		Flags:              [5]bool{true, false, false, true, false},
 		Balance:            234.987,
 		MorePreciseBalance: 1234243.5678,
+		CreatedAt:          time.Now().UTC(),
 	}
 
 	output := bytes.NewBuffer(nil)

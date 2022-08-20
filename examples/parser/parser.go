@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/sonirico/parco"
 )
@@ -50,6 +51,12 @@ var (
 		51,
 		114,
 		2,
+		4,
+		109,
+		97,
+		116,
+		104,
+		5,
 		7,
 		101,
 		110,
@@ -59,12 +66,6 @@ var (
 		115,
 		104,
 		6,
-		4,
-		109,
-		97,
-		116,
-		104,
-		5,
 		1,
 		3,
 		99,
@@ -97,6 +98,14 @@ var (
 		213,
 		50,
 		65,
+		160,
+		80,
+		242,
+		234,
+		205,
+		43,
+		13,
+		23,
 	}
 )
 
@@ -117,6 +126,7 @@ type (
 		Flags              [5]bool
 		Balance            float32
 		MorePreciseBalance float64
+		CreatedAt          time.Time
 	}
 )
 
@@ -196,6 +206,11 @@ func newExampleParser(factory parco.Factory[Example]) *parco.Parser[Example] {
 			binary.LittleEndian,
 			func(e *Example, balance float64) {
 				e.MorePreciseBalance = balance
+			},
+		).
+		TimeUTC(
+			func(e *Example, createdAt time.Time) {
+				e.CreatedAt = createdAt
 			},
 		)
 }

@@ -1,6 +1,9 @@
 package parco
 
-import "io"
+import (
+	"io"
+	"time"
+)
 
 type FixedField[T, U any] struct {
 	Id     string
@@ -338,6 +341,39 @@ func Float64FieldSetter[T any](
 	setter Setter[T, float64],
 ) Field[T, float64] {
 	return Float64Field[T](tp, nil, setter)
+}
+
+func TimeField[T any](
+	withLocation bool,
+	getter Getter[T, time.Time],
+	setter Setter[T, time.Time],
+) Field[T, time.Time] {
+	if withLocation {
+		return FixedField[T, time.Time]{
+			Type:   TimeLocation(),
+			Getter: getter,
+			Setter: setter,
+		}
+	}
+	return FixedField[T, time.Time]{
+		Type:   TimeUTC(),
+		Getter: getter,
+		Setter: setter,
+	}
+}
+
+func TimeFieldGetter[T any](
+	withLocation bool,
+	getter Getter[T, time.Time],
+) Field[T, time.Time] {
+	return TimeField[T](withLocation, getter, nil)
+}
+
+func TimeFieldSetter[T any](
+	withLocation bool,
+	setter Setter[T, time.Time],
+) Field[T, time.Time] {
+	return TimeField[T](withLocation, nil, setter)
 }
 
 func SkipField[T any](

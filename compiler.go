@@ -3,6 +3,7 @@ package parco
 import (
 	"encoding/binary"
 	"io"
+	"time"
 )
 
 type (
@@ -111,6 +112,18 @@ func (c *Compiler[T]) Float32(order binary.ByteOrder, getter Getter[T, float32])
 
 func (c *Compiler[T]) Float64(order binary.ByteOrder, getter Getter[T, float64]) *Compiler[T] {
 	return c.register(Float64FieldGetter[T](Float64(order), getter))
+}
+
+func (c *Compiler[T]) Time(withLocation bool, getter Getter[T, time.Time]) *Compiler[T] {
+	return c.register(TimeFieldGetter[T](withLocation, getter))
+}
+
+func (c *Compiler[T]) TimeLocation(getter Getter[T, time.Time]) *Compiler[T] {
+	return c.register(TimeFieldGetter[T](true, getter))
+}
+
+func (c *Compiler[T]) TimeUTC(getter Getter[T, time.Time]) *Compiler[T] {
+	return c.register(TimeFieldGetter[T](false, getter))
 }
 
 func (c *Compiler[T]) Option(f fieldCompiler[T]) *Compiler[T] {

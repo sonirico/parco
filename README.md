@@ -31,6 +31,7 @@ type (
 		Flags              [5]bool
 		Balance            float32
 		MorePreciseBalance float64
+		CreatedAt          time.Time
 	}
 )
 
@@ -126,6 +127,14 @@ func main() {
 				e.MorePreciseBalance = balance
 			},
 		).
+		TimeUTC(
+			func(e *Example) time.Time {
+				return e.CreatedAt
+			},
+			func(e *Example, createdAt time.Time) {
+				e.CreatedAt = createdAt
+			},
+		).
 		Parco()
 
 	ex := Example{
@@ -139,6 +148,7 @@ func main() {
 		Flags:              [5]bool{true, false, false, true, false},
 		Balance:            234.987,
 		MorePreciseBalance: 1234243.5678,
+		CreatedAt:          time.Now().UTC(),
 	}
 
 	output := bytes.NewBuffer(nil)
@@ -160,7 +170,6 @@ func main() {
 		panic("not equals")
 	}
 }
-
 ```
 
 ### Single types
@@ -236,33 +245,33 @@ func main() {
 
 ### Supported fields
 
-| Field                 | Status | Size                         |
-|-----------------------|--------|------------------------------|
-| byte                  | ✅      | 1                            |
-| int8                  | ✅      | 1                            |
-| uint8                 | ✅      | 1                            |
-| int16                 | ✅      | 2                            |
-| uint16                | ✅      | 2                            |
-| int32                 | ✅      | 4                            |
-| uint32                | ✅      | 4                            |
-| int64                 | ✅      | 8                            |
-| uint64                | ✅      | 8                            |
-| float32               | ✅      | 4                            |
-| float64               | ✅      | 8                            |
-| int                   | ✅      | 4/8                          |
-| bool                  | ✅      | 1                            |
-| small varchar         | ✅      | dyn (up to 255)              |
-| varchar               | ✅      | dyn (up to 65535)            |
-| text                  | ✅      | dyn (up to max uint32 chars) |
-| long text             | ✅      | dyn (up to max uint64 chars) |
-| string                | ✅      | dyn                          |
-| bytes (blob)          | ✅      | dyn                          |
-| map                   | ✅      | -                            |
-| slice                 | ✅      | -                            |
-| array (fixed)         | ✅      | -                            |
-| struct                | ✅      | -                            |
-| time.Time             | 👷🚧   | ?                            |
-| optional[T] (pointer) | ✅      | 1 + inner size               |
+| Field                 | Status | Size                           |
+|-----------------------|--------|--------------------------------|
+| byte                  | ✅      | 1                              |
+| int8                  | ✅      | 1                              |
+| uint8                 | ✅      | 1                              |
+| int16                 | ✅      | 2                              |
+| uint16                | ✅      | 2                              |
+| int32                 | ✅      | 4                              |
+| uint32                | ✅      | 4                              |
+| int64                 | ✅      | 8                              |
+| uint64                | ✅      | 8                              |
+| float32               | ✅      | 4                              |
+| float64               | ✅      | 8                              |
+| int                   | ✅      | 4/8                            |
+| bool                  | ✅      | 1                              |
+| small varchar         | ✅      | dyn (up to 255)                |
+| varchar               | ✅      | dyn (up to 65535)              |
+| text                  | ✅      | dyn (up to max uint32 chars)   |
+| long text             | ✅      | dyn (up to max uint64 chars)   |
+| string                | ✅      | dyn                            |
+| bytes (blob)          | ✅      | dyn                            |
+| map                   | ✅      | -                              |
+| slice                 | ✅      | -                              |
+| array (fixed)         | ✅      | -                              |
+| struct                | ✅      | -                              |
+| time.Time             | ✅      | 8 (+small varchar if TZ aware) |
+| optional[T] (pointer) | ✅      | 1 + inner size                 |
 
 For fully functional examples showing the whole API, refer to [Examples](https://github.com/sonirico/parco/tree/master/examples).
 

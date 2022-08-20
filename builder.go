@@ -3,6 +3,7 @@ package parco
 import (
 	"encoding/binary"
 	"io"
+	"time"
 )
 
 type (
@@ -157,6 +158,20 @@ func (b ModelBuilder[T]) Float64(order binary.ByteOrder, getter Getter[T, float6
 	b.parser.Float64(order, setter)
 	b.compiler.Float64(order, getter)
 	return b
+}
+
+func (b ModelBuilder[T]) Time(withLocation bool, getter Getter[T, time.Time], setter Setter[T, time.Time]) ModelBuilder[T] {
+	b.parser.Time(withLocation, setter)
+	b.compiler.Time(withLocation, getter)
+	return b
+}
+
+func (b ModelBuilder[T]) TimeUTC(getter Getter[T, time.Time], setter Setter[T, time.Time]) ModelBuilder[T] {
+	return b.Time(false, getter, setter)
+}
+
+func (b ModelBuilder[T]) TimeLocation(getter Getter[T, time.Time], setter Setter[T, time.Time]) ModelBuilder[T] {
+	return b.Time(true, getter, setter)
 }
 
 func (b ModelBuilder[T]) Option(field fieldBuilder[T]) ModelBuilder[T] {
