@@ -1,3 +1,4 @@
+![build](https://github.com/sonirico/parco/actions/workflows/go.yml/badge.svg)
 # Parco
 
 Hobbyist binary compiler and parser built with no reflection, highly
