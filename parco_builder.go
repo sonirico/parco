@@ -32,7 +32,19 @@ func (b ModelBuilder[T]) Compile(value T, w io.Writer) error {
 	return b.compiler.Compile(value, w)
 }
 
+func (b ModelBuilder[T]) CompileAny(value any, w io.Writer) error {
+	t, ok := value.(T)
+	if !ok {
+		return ErrUnknownType
+	}
+	return b.compiler.Compile(t, w)
+}
+
 func (b ModelBuilder[T]) Parse(r io.Reader) (T, error) {
+	return b.parser.Parse(r)
+}
+
+func (b ModelBuilder[T]) ParseAny(r io.Reader) (any, error) {
 	return b.parser.Parse(r)
 }
 
