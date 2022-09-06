@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"io"
+	"sync/atomic"
 )
 
 type (
@@ -100,4 +101,33 @@ func (b *ModelMultiBuilder[T]) compile(id T, item any, w io.Writer) (err error) 
 
 	err = c.CompileAny(item, w)
 	return
+}
+
+func newAtomicPtr[T comparable](builder *ModelMultiBuilder[T]) *atomic.Pointer[ModelMultiBuilder[T]] {
+	ptr := &atomic.Pointer[ModelMultiBuilder[T]]{}
+	ptr.Store(builder)
+	return ptr
+}
+
+var (
+	globalMultiBuilder = newAtomicPtr(MultiBuilder[int](UInt8Header()))
+)
+
+func RegisterModel(id int, builder builderAny) (err error) {
+	_, err = globalMultiBuilder.Load().Register(id, builder)
+	return
+}
+
+func CompileModel(item serializable[int], w io.Writer) (err error) {
+	err = globalMultiBuilder.Load().Compile(item, w)
+	return
+}
+
+func CompileAnyModel(id int, item any, w io.Writer) (err error) {
+	err = globalMultiBuilder.Load().CompileAny(id, item, w)
+	return
+}
+
+func ParseModel(r io.Reader) (int, any, error) {
+	return globalMultiBuilder.Load().Parse(r)
 }
