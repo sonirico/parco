@@ -6,10 +6,12 @@ import (
 )
 
 var (
-	ErrNotIntegerType = errors.New("not an integer type")
-	ErrOverflow       = errors.New("bytes overflow")
-	ErrCannotRead     = errors.New("unsufficient bytes read")
-	ErrCannotWrite    = errors.New("unsufficient bytes written")
+	ErrNotIntegerType    = errors.New("not an integer type")
+	ErrOverflow          = errors.New("bytes overflow")
+	ErrCannotRead        = errors.New("unsufficient bytes read")
+	ErrCannotWrite       = errors.New("unsufficient bytes written")
+	ErrAlreadyRegistered = errors.New("builder is registered already")
+	ErrUnknownType       = errors.New("unknown type")
 )
 
 type ErrUnSufficientBytes struct {
