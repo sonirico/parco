@@ -18,7 +18,7 @@ type (
 		pool256 sync.Pool
 
 		poolAny    sync.Pool
-		poolAnyMap map[int]sync.Pool
+		poolAnyMap map[int]*sync.Pool
 	}
 
 	Pooler interface {
@@ -27,8 +27,8 @@ type (
 	}
 )
 
-func newSyncPool(byteSize int) sync.Pool {
-	return sync.Pool{New: func() any {
+func newSyncPool(byteSize int) *sync.Pool {
+	return &sync.Pool{New: func() any {
 		b := make([]byte, byteSize)
 		return &b
 	}}
@@ -36,13 +36,13 @@ func newSyncPool(byteSize int) sync.Pool {
 
 func NewPool() *Pool {
 	return &Pool{
-		pool1:      newSyncPool(1),
-		pool2:      newSyncPool(2),
-		pool4:      newSyncPool(4),
-		pool8:      newSyncPool(8),
-		pool256:    newSyncPool(256),
-		poolAny:    newSyncPool(DefaultPoolAnySize),
-		poolAnyMap: make(map[int]sync.Pool),
+		pool1:      *newSyncPool(1),
+		pool2:      *newSyncPool(2),
+		pool4:      *newSyncPool(4),
+		pool8:      *newSyncPool(8),
+		pool256:    *newSyncPool(256),
+		poolAny:    *newSyncPool(DefaultPoolAnySize),
+		poolAnyMap: make(map[int]*sync.Pool),
 	}
 }
 
@@ -84,6 +84,7 @@ func (p *Pool) Put(b *[]byte) {
 }
 
 func (p *Pool) Get1() *[]byte {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
 	return p.pool1.Get().(*[]byte)
 }
 
@@ -92,6 +93,7 @@ func (p *Pool) Put1(b *[]byte) {
 }
 
 func (p *Pool) Get2() *[]byte {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
 	return p.pool2.Get().(*[]byte)
 }
 
@@ -100,6 +102,7 @@ func (p *Pool) Put2(b *[]byte) {
 }
 
 func (p *Pool) Get4() *[]byte {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
 	return p.pool4.Get().(*[]byte)
 }
 
@@ -108,6 +111,7 @@ func (p *Pool) Put4(b *[]byte) {
 }
 
 func (p *Pool) Get8() *[]byte {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
 	return p.pool8.Get().(*[]byte)
 }
 
@@ -116,6 +120,7 @@ func (p *Pool) Put8(b *[]byte) {
 }
 
 func (p *Pool) Get256() *[]byte {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
 	return p.pool256.Get().(*[]byte)
 }
 
@@ -124,6 +129,7 @@ func (p *Pool) Put256(b *[]byte) {
 }
 
 func (p *Pool) GetAny() *[]byte {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
 	return p.poolAny.Get().(*[]byte)
 }
 
@@ -146,6 +152,7 @@ func (p *Pool) GetAnyMap(size int) *[]byte {
 		pool = newSyncPool(size)
 		p.poolAnyMap[size] = pool
 	}
+	//nolint:errcheck // Type assertion is safe - we control pool contents
 	return pool.Get().(*[]byte)
 }
 

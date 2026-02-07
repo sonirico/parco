@@ -165,9 +165,9 @@ func TestMapType_ParseError_InsufficientBytesForKey(t *testing.T) {
 func TestMapType_ParseError_InsufficientBytesForValue(t *testing.T) {
 	mapType := MapType[uint8, string](UInt8Header(), UInt8(), SmallVarchar())
 	buf := bytes.NewBuffer([]byte{
-		0x01, // length = 1
-		0x05, // key = 5
-		0x03, // varchar length = 3 (using SmallVarchar with UInt8 header)
+		0x01,       // length = 1
+		0x05,       // key = 5
+		0x03,       // varchar length = 3 (using SmallVarchar with UInt8 header)
 		0x61, 0x62, // only 2 bytes of "abc" string
 	})
 

@@ -112,7 +112,11 @@ func (b ModelBuilder[T]) Int8(getter Getter[T, int8], setter Setter[T, int8]) Mo
 	return b
 }
 
-func (b ModelBuilder[T]) UInt16(order binary.ByteOrder, getter Getter[T, uint16], setter Setter[T, uint16]) ModelBuilder[T] {
+func (b ModelBuilder[T]) UInt16(
+	order binary.ByteOrder,
+	getter Getter[T, uint16],
+	setter Setter[T, uint16],
+) ModelBuilder[T] {
 	b.parser.UInt16(order, setter)
 	b.compiler.UInt16(order, getter)
 	return b
@@ -130,25 +134,41 @@ func (b ModelBuilder[T]) UInt16BE(getter Getter[T, uint16], setter Setter[T, uin
 	return b
 }
 
-func (b ModelBuilder[T]) Int32(order binary.ByteOrder, getter Getter[T, int32], setter Setter[T, int32]) ModelBuilder[T] {
+func (b ModelBuilder[T]) Int32(
+	order binary.ByteOrder,
+	getter Getter[T, int32],
+	setter Setter[T, int32],
+) ModelBuilder[T] {
 	b.parser.Int32(order, setter)
 	b.compiler.Int32(order, getter)
 	return b
 }
 
-func (b ModelBuilder[T]) UInt32(order binary.ByteOrder, getter Getter[T, uint32], setter Setter[T, uint32]) ModelBuilder[T] {
+func (b ModelBuilder[T]) UInt32(
+	order binary.ByteOrder,
+	getter Getter[T, uint32],
+	setter Setter[T, uint32],
+) ModelBuilder[T] {
 	b.parser.UInt32(order, setter)
 	b.compiler.UInt32(order, getter)
 	return b
 }
 
-func (b ModelBuilder[T]) Int64(order binary.ByteOrder, getter Getter[T, int64], setter Setter[T, int64]) ModelBuilder[T] {
+func (b ModelBuilder[T]) Int64(
+	order binary.ByteOrder,
+	getter Getter[T, int64],
+	setter Setter[T, int64],
+) ModelBuilder[T] {
 	b.parser.Int64(order, setter)
 	b.compiler.Int64(order, getter)
 	return b
 }
 
-func (b ModelBuilder[T]) UInt64(order binary.ByteOrder, getter Getter[T, uint64], setter Setter[T, uint64]) ModelBuilder[T] {
+func (b ModelBuilder[T]) UInt64(
+	order binary.ByteOrder,
+	getter Getter[T, uint64],
+	setter Setter[T, uint64],
+) ModelBuilder[T] {
 	b.parser.UInt64(order, setter)
 	b.compiler.UInt64(order, getter)
 	return b
@@ -160,19 +180,31 @@ func (b ModelBuilder[T]) Int(order binary.ByteOrder, getter Getter[T, int], sett
 	return b
 }
 
-func (b ModelBuilder[T]) Float32(order binary.ByteOrder, getter Getter[T, float32], setter Setter[T, float32]) ModelBuilder[T] {
+func (b ModelBuilder[T]) Float32(
+	order binary.ByteOrder,
+	getter Getter[T, float32],
+	setter Setter[T, float32],
+) ModelBuilder[T] {
 	b.parser.Float32(order, setter)
 	b.compiler.Float32(order, getter)
 	return b
 }
 
-func (b ModelBuilder[T]) Float64(order binary.ByteOrder, getter Getter[T, float64], setter Setter[T, float64]) ModelBuilder[T] {
+func (b ModelBuilder[T]) Float64(
+	order binary.ByteOrder,
+	getter Getter[T, float64],
+	setter Setter[T, float64],
+) ModelBuilder[T] {
 	b.parser.Float64(order, setter)
 	b.compiler.Float64(order, getter)
 	return b
 }
 
-func (b ModelBuilder[T]) Time(withLocation bool, getter Getter[T, time.Time], setter Setter[T, time.Time]) ModelBuilder[T] {
+func (b ModelBuilder[T]) Time(
+	withLocation bool,
+	getter Getter[T, time.Time],
+	setter Setter[T, time.Time],
+) ModelBuilder[T] {
 	b.parser.Time(withLocation, setter)
 	b.compiler.Time(withLocation, getter)
 	return b

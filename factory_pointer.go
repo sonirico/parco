@@ -42,23 +42,24 @@ type NativePooledFactory[T any] struct {
 	resetFunc func(*T)
 }
 
-func (f NativePooledFactory[T]) Get() T {
+func (f *NativePooledFactory[T]) Get() T {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
 	return f.inner.Get().(T)
 }
 
-func (f NativePooledFactory[T]) Put(t T) {
+func (f *NativePooledFactory[T]) Put(t T) {
 	f.inner.Put(t)
 }
 
 func PooledFactory[T any](inner Factory[T], options ...nativePooledFactoryOption[T]) PoolFactory[T] {
-	f := NativePooledFactory[T]{
+	f := &NativePooledFactory[T]{
 		inner: sync.Pool{New: func() any {
 			return inner.Get()
 		}},
 	}
 
 	for _, opt := range options {
-		opt.Configure(&f)
+		opt.Configure(f)
 	}
 
 	return f

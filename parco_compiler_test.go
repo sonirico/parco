@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"github.com/vmihailenco/msgpack/v5"
 	"math"
 	"math/rand"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type compileFuncType func(t TestStruct) (int, error)

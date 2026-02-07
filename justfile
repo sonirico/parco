@@ -35,9 +35,13 @@ bench-profile:
 
 # Format code
 format:
+    @echo "Running gofmt..."
     gofmt -w .
+    @echo "Running goimports..."
     goimports -w .
+    @echo "Running golines..."
     golines -w --max-len=120 .
+    @echo "✓ Code formatted"
 
 # Run linter
 lint:
@@ -63,6 +67,7 @@ setup:
     go install github.com/segmentio/golines@latest
     go install golang.org/x/perf/cmd/benchstat@latest
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    @echo "✓ Development tools installed"
 
 # Run all checks (test, lint, format check)
 ci: test lint

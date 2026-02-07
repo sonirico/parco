@@ -44,19 +44,17 @@ func (t SliceType[T]) Parse(r io.Reader) (res Iterable[T], err error) {
 
 	arrType := Array[T](length, t.inner)
 
-	t.length = length
-
 	return arrType.Parse(r)
 }
 
 func (t SliceType[T]) Compile(x Iterable[T], w io.Writer) error {
-	t.length = x.Len()
+	length := x.Len()
 
-	if err := t.header.Compile(t.length, w); err != nil {
+	if err := t.header.Compile(length, w); err != nil {
 		return err
 	}
 
-	arrType := Array[T](t.length, t.inner)
+	arrType := Array[T](length, t.inner)
 
 	return arrType.Compile(x, w)
 }

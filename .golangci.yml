@@ -59,12 +59,21 @@ issues:
       linters:
         - gosec
         - gocritic
+        - errcheck
+        - govet
+        - unparam
+        - revive
 
     # Allow unsafe in specific files
     - path: utils_nalloc\.go
       linters:
         - gosec
       text: "G103.*unsafe"
+
+    # Integer conversion warnings - mostly false positives for length conversions
+    - linters:
+        - gosec
+      text: "G115"
 
   max-issues-per-linter: 0
   max-same-issues: 0

@@ -105,6 +105,8 @@ func Int64Header(order binary.ByteOrder) Type[int] {
 			return m, err
 		},
 		func(value int, box []byte) (err error) {
+			// On 64-bit systems int is int64, so no overflow check needed
+			//nolint:staticcheck // SA4003: Condition is always false on 64-bit, but kept for clarity
 			if value > math.MaxInt64 || value < math.MinInt64 {
 				return ErrOverflow
 			}

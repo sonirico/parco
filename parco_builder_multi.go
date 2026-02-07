@@ -2,9 +2,10 @@ package parco
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"sync/atomic"
+
+	"github.com/pkg/errors"
 )
 
 type (
