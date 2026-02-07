@@ -10,17 +10,18 @@ linters:
     - govet         # Vet examines Go source code
     - ineffassign   # Detect ineffectual assignments
     - staticcheck   # Go static analysis
-    - unused        # Check for unused constants, variables, functions and types
     - gofmt         # Check whether code was gofmt-ed
     - goimports     # Check import statements are formatted
     - misspell      # Finds commonly misspelled English words
     - revive        # Fast, configurable, extensible, flexible linter
     - gosec         # Security problems
     - gocritic      # Opinionated linter
-    - unconvert     # Remove unnecessary type conversions
-    - unparam       # Reports unused function parameters
-    - prealloc      # Find slice declarations that could potentially be preallocated
     - nolintlint    # Reports ill-formed or insufficient nolint directives
+  disable:
+    - unused        # Too noisy for private fields that may be used in future
+    - unconvert     # Style issue, not a bug
+    - unparam       # Too noisy
+    - prealloc      # Micro-optimization
 
 linters-settings:
   errcheck:
@@ -31,6 +32,7 @@ linters-settings:
     enable-all: true
     disable:
       - shadow  # Too many false positives
+      - fieldalignment  # Micro-optimization, not worth the noise
 
   revive:
     rules:
@@ -47,10 +49,12 @@ linters-settings:
     enabled-tags:
       - diagnostic
       - performance
-      - style
     disabled-checks:
       - commentFormatting
       - whyNoLint
+      - unnamedResult
+      - sloppyReassign
+      - unlambda
 
 issues:
   exclude-rules:
@@ -63,6 +67,7 @@ issues:
         - govet
         - unparam
         - revive
+        - gosimple
 
     # Allow unsafe in specific files
     - path: utils_nalloc\.go
