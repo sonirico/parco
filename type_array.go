@@ -29,6 +29,9 @@ func (t ArrayType[T]) Parse(r io.Reader) (res Iterable[T], err error) {
 }
 
 func (t ArrayType[T]) Compile(x Iterable[T], w io.Writer) error {
+	if x.Len() != t.length {
+		return ErrInvalidLength
+	}
 	return x.Range(func(x T) error {
 		if err := t.inner.Compile(x, w); err != nil {
 			return err

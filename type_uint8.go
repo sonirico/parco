@@ -58,9 +58,7 @@ func ParseInt8(data []byte) (int8, error) {
 	if len(data) < 1 {
 		return 0, NewErrUnSufficientBytesError(1, 0)
 	}
-	if data[0] > math.MaxInt8 {
-		return 0, ErrOverflow
-	}
+	// Direct conversion handles two's complement for negative values
 	return int8(data[0]), nil
 }
 

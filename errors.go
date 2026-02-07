@@ -12,6 +12,7 @@ var (
 	ErrCannotWrite       = errors.New("unsufficient bytes written")
 	ErrAlreadyRegistered = errors.New("builder is registered already")
 	ErrUnknownType       = errors.New("unknown type")
+	ErrInvalidLength     = errors.New("invalid length")
 )
 
 type ErrUnSufficientBytes struct {

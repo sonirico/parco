@@ -7,8 +7,13 @@ func SkipType(pad int) Type[any] {
 			return nil, nil
 		},
 		compiler: func(_ any, box []byte) error {
+			// Zero out the padding bytes
+			for i := range box {
+				box[i] = 0
+			}
 			return nil
 		},
+		pool: SinglePool,
 	}
 }
 

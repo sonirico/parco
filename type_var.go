@@ -4,6 +4,13 @@ import (
 	"io"
 )
 
+const (
+	// MaxReasonableVarSize is the maximum allowed size for variable-length types
+	// to prevent malicious or corrupted data from causing excessive memory allocation.
+	// Set to 100MB - adjust based on your use case.
+	MaxReasonableVarSize = 100 * 1024 * 1024 // 100MB
+)
+
 type (
 	varType[T any] struct {
 		header IntType
@@ -36,6 +43,12 @@ func (v varType[T]) Parse(r io.Reader) (res T, err error) {
 	)
 
 	if size, err = v.header.Parse(r); err != nil {
+		return
+	}
+
+	// Validate size to prevent excessive memory allocation
+	if size < 0 || size > MaxReasonableVarSize {
+		err = ErrOverflow
 		return
 	}
 

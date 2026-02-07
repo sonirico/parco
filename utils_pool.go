@@ -2,6 +2,13 @@ package parco
 
 import "sync"
 
+const (
+	// MaxPoolMapSize limits the number of dynamically created pools to prevent memory leaks
+	MaxPoolMapSize = 100
+	// DefaultPoolAnySize is the size of buffers returned by GetAny() (8KB)
+	DefaultPoolAnySize = 1 << 13
+)
+
 type (
 	Pool struct {
 		pool1   sync.Pool
@@ -34,22 +41,25 @@ func NewPool() *Pool {
 		pool4:      newSyncPool(4),
 		pool8:      newSyncPool(8),
 		pool256:    newSyncPool(256),
-		poolAny:    newSyncPool(1 << 13),
+		poolAny:    newSyncPool(DefaultPoolAnySize),
 		poolAnyMap: make(map[int]sync.Pool),
 	}
 }
 
+// Get returns a byte slice of at least the requested size from the pool.
+// The returned slice may be larger than requested.
+// Always use a defer to Put() the slice back when done.
 func (p *Pool) Get(size int) *[]byte {
-	switch size {
-	case 1:
+	switch {
+	case size <= 1:
 		return p.Get1()
-	case 2:
+	case size <= 2:
 		return p.Get2()
-	case 4:
+	case size <= 4:
 		return p.Get4()
-	case 8:
+	case size <= 8:
 		return p.Get8()
-	case 256:
+	case size <= 256:
 		return p.Get256()
 	default:
 		return p.GetAny()
@@ -102,7 +112,7 @@ func (p *Pool) Get8() *[]byte {
 }
 
 func (p *Pool) Put8(b *[]byte) {
-	p.pool4.Put(b)
+	p.pool8.Put(b)
 }
 
 func (p *Pool) Get256() *[]byte {
@@ -121,17 +131,37 @@ func (p *Pool) PutAny(b *[]byte) {
 	p.poolAny.Put(b)
 }
 
+// GetAnyMap returns a byte slice of exactly the requested size from a dynamically created pool.
+// This method creates new pools on-demand but limits the total number to MaxPoolMapSize.
+// If the limit is reached, it falls back to GetAny().
+// Note: Only use this if you need exact sizes and will call PutAnyMap() to return the buffer.
 func (p *Pool) GetAnyMap(size int) *[]byte {
 	pool, ok := p.poolAnyMap[size]
 	if !ok {
+		// Prevent unbounded growth of poolAnyMap
+		if len(p.poolAnyMap) >= MaxPoolMapSize {
+			// Fallback to GetAny when we've reached the limit
+			return p.GetAny()
+		}
 		pool = newSyncPool(size)
 		p.poolAnyMap[size] = pool
 	}
 	return pool.Get().(*[]byte)
 }
 
+// PutAnyMap returns a byte slice to the dynamically created pool.
+// If no pool exists for this size (e.g., buffer came from GetAny fallback),
+// the buffer is silently discarded to prevent panics.
 func (p *Pool) PutAnyMap(b *[]byte) {
-	pool, _ := p.poolAnyMap[len(*b)]
+	if b == nil {
+		return
+	}
+	pool, ok := p.poolAnyMap[len(*b)]
+	if !ok {
+		// Buffer doesn't belong to any pool in the map, likely from GetAny() fallback
+		// Just discard it - GC will clean it up
+		return
+	}
 	pool.Put(b)
 }
 

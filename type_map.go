@@ -4,6 +4,12 @@ import (
 	"io"
 )
 
+const (
+	// MaxReasonableMapLength is the maximum allowed length for maps
+	// to prevent malicious or corrupted data from causing excessive memory allocation.
+	MaxReasonableMapLength = 10_000_000 // 10 million entries
+)
+
 type (
 	mapType[K comparable, V any] struct {
 		length    int
@@ -26,6 +32,11 @@ func (t mapType[K, V]) Parse(r io.Reader) (res map[K]V, err error) {
 	t.length = length
 	if err != nil {
 		return nil, err
+	}
+
+	// Validate length to prevent excessive memory allocation
+	if length < 0 || length > MaxReasonableMapLength {
+		return nil, ErrOverflow
 	}
 
 	values := make(map[K]V, t.length)

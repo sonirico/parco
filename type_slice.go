@@ -4,6 +4,12 @@ import (
 	"io"
 )
 
+const (
+	// MaxReasonableSliceLength is the maximum allowed length for slices
+	// to prevent malicious or corrupted data from causing excessive memory allocation.
+	MaxReasonableSliceLength = 10_000_000 // 10 million elements
+)
+
 type (
 	Iterable[T any] interface {
 		Len() int
@@ -29,6 +35,11 @@ func (t SliceType[T]) Parse(r io.Reader) (res Iterable[T], err error) {
 	length, err = t.header.Parse(r)
 	if err != nil {
 		return nil, err
+	}
+
+	// Validate length to prevent excessive memory allocation
+	if length < 0 || length > MaxReasonableSliceLength {
+		return nil, ErrOverflow
 	}
 
 	arrType := Array[T](length, t.inner)
