@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>parco — binary serialization for Go, byte by byte</title>
 <meta name="description" content="Parco is a high-performance binary serializer for Go: no reflection, no codegen, zero core dependencies. You define the layout; parco writes the bytes.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231098AD'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' fill='white' text-anchor='middle'%3E01%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%231098AD'/%3E%3Cg fill='white'%3E%3Crect x='6' y='2' width='1' height='1'/%3E%3Crect x='5' y='3' width='3' height='1'/%3E%3Crect x='4' y='4' width='5' height='1'/%3E%3Crect x='3' y='5' width='3' height='1'/%3E%3Crect x='7' y='5' width='3' height='1'/%3E%3Crect x='3' y='6' width='8' height='1'/%3E%3Crect x='2' y='7' width='2' height='1'/%3E%3Crect x='6' y='7' width='6' height='1'/%3E%3Crect x='2' y='8' width='1' height='1'/%3E%3Crect x='7' y='8' width='6' height='1'/%3E%3Crect x='8' y='9' width='5' height='1'/%3E%3Crect x='7' y='10' width='6' height='1'/%3E%3Crect x='6' y='11' width='7' height='1'/%3E%3Crect x='4' y='12' width='9' height='1'/%3E%3Crect x='3' y='13' width='11' height='1'/%3E%3C/g%3E%3C/svg%3E">
 <style>
 :root {
   --bg: #F6F8F8;
@@ -78,6 +78,9 @@ a:focus-visible, button:focus-visible {
   color: var(--ink);
   letter-spacing: -0.02em;
 }
+.wordmark { display: inline-flex; align-items: center; gap: 8px; }
+.horse-mark { color: var(--mark); display: block; }
+.horse-eye { fill: var(--mark-2); }
 .wordmark .cursor {
   display: inline-block; width: 9px; height: 18px;
   background: var(--mark); vertical-align: text-bottom;
@@ -197,6 +200,25 @@ pre.code .str { color: #8FC98F; }
 pre.code .num { color: #D9A66B; }
 pre.code .com { color: #5E7280; }
 pre.code .fn { color: #C9B87F; }
+/* etymology */
+.name-flex { display: flex; gap: 48px; align-items: center; }
+.horse-big {
+  width: 128px; height: 128px; flex-shrink: 0;
+  color: var(--mark);
+}
+.eq {
+  font-family: var(--mono);
+  font-size: clamp(20px, 3.2vw, 30px);
+  font-weight: 700; letter-spacing: -0.02em;
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: baseline;
+}
+.eq em { font-style: normal; }
+.eq .par { color: var(--mark); }
+.eq .co { color: var(--mark-2); }
+.eq .rest { color: var(--muted); font-weight: 400; }
+.eq .op { color: var(--muted); font-weight: 400; }
+.name-note { margin-top: 16px; font-size: 14px; color: var(--muted); max-width: 52ch; }
+
 /* trade */
 .trade { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .trade .col {
@@ -253,6 +275,8 @@ footer {
 }
 @media (max-width: 860px) {
   .hero .wrap { grid-template-columns: 1fr; gap: 36px; }
+  .name-flex { flex-direction: column; align-items: flex-start; gap: 28px; }
+  .horse-big { width: 96px; height: 96px; }
   .grid { grid-template-columns: 1fr; }
   .trade { grid-template-columns: 1fr; }
   .bench-row { grid-template-columns: minmax(0,140px) 1fr 80px; }
@@ -261,9 +285,31 @@ footer {
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="px-horse" viewBox="0 0 12 12">
+      <g fill="currentColor">
+        <rect x="4" y="0" width="1" height="1"/>
+        <rect x="3" y="1" width="3" height="1"/>
+        <rect x="2" y="2" width="5" height="1"/>
+        <rect x="1" y="3" width="3" height="1"/><rect x="5" y="3" width="3" height="1"/>
+        <rect x="1" y="4" width="8" height="1"/>
+        <rect x="0" y="5" width="2" height="1"/><rect x="4" y="5" width="6" height="1"/>
+        <rect x="0" y="6" width="1" height="1"/><rect x="5" y="6" width="6" height="1"/>
+        <rect x="6" y="7" width="5" height="1"/>
+        <rect x="5" y="8" width="6" height="1"/>
+        <rect x="4" y="9" width="7" height="1"/>
+        <rect x="2" y="10" width="9" height="1"/>
+        <rect x="1" y="11" width="11" height="1"/>
+      </g>
+      <rect class="horse-eye" x="4" y="3" width="1" height="1"/>
+    </symbol>
+  </defs>
+</svg>
+
 <header class="topbar">
   <div class="wrap">
-    <span class="wordmark">parco<span class="cursor"></span></span>
+    <span class="wordmark"><svg class="horse-mark" width="20" height="20" aria-hidden="true"><use href="#px-horse"/></svg>parco<span class="cursor"></span></span>
     <nav class="topnav" aria-label="Main">
       <a href="#quickstart">quick start</a>
       <a href="#bench">benchmarks</a>
@@ -381,9 +427,33 @@ point, err := parser.<span class="fn">Parse</span>(&amp;buf)                  <s
   </div>
 </section>
 
+<section id="name">
+  <div class="wrap">
+    <span class="sec-mark"><b>0x20</b> etymology</span>
+    <h2>The name, decoded</h2>
+    <div class="name-flex">
+      <svg class="horse-big" viewBox="0 0 12 12" aria-label="Pixel-art horse, parco's namesake"><use href="#px-horse"/></svg>
+      <div>
+        <p class="eq">
+          <span><em class="par">par</em><span class="rest">ser</span></span>
+          <span class="op">+</span>
+          <span><em class="co">co</em><span class="rest">mpiler</span></span>
+          <span class="op">=</span>
+          <span><em class="par">par</em><em class="co">co</em></span>
+        </p>
+        <p class="name-note">
+          Two halves, same builder: every model you describe yields its parser
+          and its compiler from one definition. Parco is also the name of a
+          horse — a coincidence too good to waste, so the horse stays.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="trade">
   <div class="wrap">
-    <span class="sec-mark"><b>0x20</b> trade-offs</span>
+    <span class="sec-mark"><b>0x30</b> trade-offs</span>
     <h2>The trade, stated plainly</h2>
     <div class="trade">
       <div class="col yes">
@@ -412,7 +482,7 @@ point, err := parser.<span class="fn">Parse</span>(&amp;buf)                  <s
 
 <section id="bench">
   <div class="wrap">
-    <span class="sec-mark"><b>0x30</b> benchmarks</span>
+    <span class="sec-mark"><b>0x40</b> benchmarks</span>
     <h2>Measured, not promised</h2>
     <div id="bench-live" hidden>
       <div id="bench-chart" role="img" aria-label="Latest benchmark results in nanoseconds per operation"></div>
