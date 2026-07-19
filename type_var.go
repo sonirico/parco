@@ -38,9 +38,7 @@ func (v varType[T]) ParseBytes(box []byte) (res T, err error) {
 }
 
 func (v varType[T]) Parse(r io.Reader) (res T, err error) {
-	var (
-		read, size int
-	)
+	var size int
 
 	if size, err = v.header.Parse(r); err != nil {
 		return
@@ -54,16 +52,19 @@ func (v varType[T]) Parse(r io.Reader) (res T, err error) {
 
 	box := v.pool.Get(size)
 	defer v.pool.Put(box)
-	data := *box
-	data = data[:size]
 
-	if read, err = r.Read(data); err != nil {
-		return
+	if size <= cap(*box) {
+		data := (*box)[:size]
+		if err = readFull(r, data); err != nil {
+			return
+		}
+		return v.ParseBytes(data)
 	}
 
-	if read != size {
-		// TODO: wrap
-		err = ErrCannotRead
+	// The declared size exceeds the pooled buffer: read in chunks so a
+	// corrupted or malicious header cannot force a large upfront allocation.
+	var data []byte
+	if data, err = readChunked(r, size, cap(*box)); err != nil {
 		return
 	}
 

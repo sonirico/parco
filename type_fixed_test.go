@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 	"testing"
+	"testing/iotest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -235,4 +236,17 @@ func (w *shortWriter) Write(p []byte) (n int, err error) {
 		return w.maxBytes, nil
 	}
 	return len(p), nil
+}
+
+func TestFixedType_ParseShortReads(t *testing.T) {
+	// A reader delivering one byte at a time must not fail the parse:
+	// io.Reader allows short reads without error.
+	typ := UInt32LE()
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, typ.Compile(12345, buf))
+
+	actual, err := typ.Parse(iotest.OneByteReader(buf))
+
+	require.NoError(t, err)
+	require.Equal(t, uint32(12345), actual)
 }

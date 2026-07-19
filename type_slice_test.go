@@ -2,13 +2,16 @@ package parco
 
 import (
 	"bytes"
+	"encoding/binary"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func createSlice[T any](value T, length int) []T {
-	r := make([]T, length)
+	r := make([]T, 0, length)
 
-	for i := 0; i < length; i++ {
+	for range length {
 		r = append(r, value)
 	}
 
@@ -60,4 +63,15 @@ func TestSliceType_Compile(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSliceType_ParseLyingHeader(t *testing.T) {
+	// The header declares 60k elements but no element data follows: parsing
+	// must fail instead of allocating room for the declared count.
+	data := make([]byte, 2)
+	binary.LittleEndian.PutUint16(data, 60000)
+
+	_, err := Slice[uint16](UInt16HeaderLE(), UInt16LE()).Parse(bytes.NewReader(data))
+
+	require.Error(t, err)
 }

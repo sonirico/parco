@@ -39,9 +39,9 @@ func (t mapType[K, V]) Parse(r io.Reader) (res map[K]V, err error) {
 		return nil, ErrOverflow
 	}
 
-	values := make(map[K]V, t.length)
+	values := make(map[K]V, min(t.length, maxInitialCapacity))
 
-	for i := 0; i < t.length; i++ {
+	for range t.length {
 		var (
 			k K
 			v V

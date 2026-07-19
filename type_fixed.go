@@ -22,18 +22,9 @@ func (i fixedType[T]) ParseBytes(data []byte) (res T, err error) {
 func (i fixedType[T]) Parse(r io.Reader) (res T, err error) {
 	box := i.pool.Get(i.byteLength)
 	defer i.pool.Put(box)
-	data := *box
-	data = data[:i.byteLength]
+	data := (*box)[:i.byteLength]
 
-	read, err := r.Read(data)
-
-	if err != nil {
-		return
-	}
-
-	if read != i.byteLength {
-		// TODO: wrap
-		err = ErrCannotRead
+	if err = readFull(r, data); err != nil {
 		return
 	}
 

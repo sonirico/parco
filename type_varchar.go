@@ -1,6 +1,7 @@
 package parco
 
 import (
+	"bytes"
 	"encoding/binary"
 	"io"
 )
@@ -90,8 +91,11 @@ func CompileStringFactory() CompilerFunc[string] {
 	}
 }
 
+// ParseBlob copies the input: the incoming slice aliases a pooled buffer
+// that is recycled right after the parse, so returning it as-is would hand
+// the caller bytes that mutate on the next parse.
 func ParseBlob(data []byte) ([]byte, error) {
-	return data, nil
+	return bytes.Clone(data), nil
 }
 
 func CompileBlob(x []byte, w io.Writer) (err error) {

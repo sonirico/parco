@@ -4,6 +4,13 @@ import (
 	"io"
 )
 
+const (
+	// maxInitialCapacity caps the capacity pre-allocated from a wire-provided
+	// length, so a lying header cannot force a large allocation before any
+	// element is actually parsed. Collections grow past it as data arrives.
+	maxInitialCapacity = 4096
+)
+
 type (
 	ArrayType[T any] struct {
 		length int
@@ -16,13 +23,14 @@ func (t ArrayType[T]) ByteLength() int {
 }
 
 func (t ArrayType[T]) Parse(r io.Reader) (res Iterable[T], err error) {
-	values := make([]T, t.length)
+	values := make([]T, 0, min(t.length, maxInitialCapacity))
 
-	for i := 0; i < t.length; i++ {
-		values[i], err = t.inner.Parse(r)
-		if err != nil {
+	for range t.length {
+		var value T
+		if value, err = t.inner.Parse(r); err != nil {
 			return
 		}
+		values = append(values, value)
 	}
 
 	return SliceView[T](values), nil
