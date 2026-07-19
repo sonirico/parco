@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>parco — binary serialization for Go, byte by byte</title>
+<meta name="description" content="Parco is a high-performance binary serializer for Go: no reflection, no codegen, zero core dependencies. You define the layout; parco writes the bytes.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231098AD'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' fill='white' text-anchor='middle'%3E01%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #F6F8F8;
+  --surface: #FCFCFB;
+  --ink: #17242B;
+  --muted: #5B6B74;
+  --hairline: #DFE6E8;
+  --accent: #0E7D96;        /* link/text accent, darker than mark for AA */
+  --mark: #1098AD;          /* chart + payload bytes */
+  --mark-2: #B45309;        /* header bytes */
+  --code-bg: #0F1519;
+  --code-ink: #D7E2E7;
+  --code-muted: #728692;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0C1114;
+    --surface: #10161B;
+    --ink: #E4ECEF;
+    --muted: #8CA0AA;
+    --hairline: #22303A;
+    --accent: #3BC9DB;
+    --mark: #0FA3B8;
+    --mark-2: #CE7A0A;
+    --code-bg: #0A0F12;
+    --code-ink: #D7E2E7;
+  }
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+/* ---- top bar ---- */
+.topbar {
+  border-bottom: 1px solid var(--hairline);
+  position: sticky; top: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+.topbar .wrap {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.wordmark {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.wordmark .cursor {
+  display: inline-block; width: 9px; height: 18px;
+  background: var(--mark); vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: blink 1.2s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+.topnav { display: flex; gap: 22px; font-family: var(--mono); font-size: 13px; }
+.topnav a { color: var(--muted); }
+.topnav a:hover { color: var(--accent); text-decoration: none; }
+
+/* ---- hero ---- */
+.hero { padding: 72px 0 64px; }
+.hero .wrap {
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 56px; align-items: center;
+}
+.eyebrow {
+  font-family: var(--mono); font-size: 13px; color: var(--muted);
+  margin-bottom: 16px; display: block;
+}
+h1 {
+  font-family: var(--mono);
+  font-size: clamp(28px, 4.5vw, 42px);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+h1 em { font-style: normal; color: var(--accent); }
+.hero p.lede { margin: 20px 0 8px; color: var(--muted); max-width: 46ch; }
+.hero p.honest { margin: 8px 0 28px; font-size: 14px; color: var(--muted); max-width: 46ch; }
+.hero p.honest strong { color: var(--ink); font-weight: 600; }
+.install {
+  display: inline-flex; align-items: center; gap: 14px;
+  font-family: var(--mono); font-size: 14px;
+  background: var(--code-bg); color: var(--code-ink);
+  border-radius: 8px; padding: 12px 16px;
+}
+.install .dollar { color: var(--code-muted); user-select: none; }
+.install button {
+  background: none; border: 1px solid #2C3A44; color: var(--code-muted);
+  font-family: var(--mono); font-size: 12px;
+  border-radius: 5px; padding: 3px 9px; cursor: pointer;
+}
+.install button:hover { color: var(--code-ink); border-color: var(--code-muted); }
+
+/* ---- wire diagram (signature) ---- */
+.wire {
+  background: var(--code-bg); color: var(--code-ink);
+  border-radius: 12px; padding: 26px 28px;
+  font-family: var(--mono); font-size: 14px;
+  overflow-x: auto;
+  box-shadow: 0 12px 40px -18px rgba(10, 40, 50, .45);
+}
+.wire .src { color: var(--code-ink); white-space: pre; line-height: 1.7; }
+.wire .src .kw { color: #7FB4C9; }
+.wire .src .str { color: #8FC98F; }
+.wire .src .num { color: #D9A66B; }
+.wire .arrow {
+  color: var(--code-muted); margin: 14px 0; white-space: pre;
+}
+.bytes { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
+.byte {
+  min-width: 34px; text-align: center;
+  padding: 7px 0; border-radius: 4px;
+  font-size: 13px; font-weight: 600;
+  color: #08181D;
+  opacity: 0; transform: translateY(4px);
+  animation: byte-in .3s ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) { .byte { opacity: 1; transform: none; } }
+.byte.h { background: var(--mark-2); color: #FFF7ED; }
+.byte.p { background: var(--mark); color: #F0FBFD; }
+@keyframes byte-in { to { opacity: 1; transform: none; } }
+.wire .legend {
+  display: flex; gap: 18px; margin-top: 14px;
+  font-size: 12px; color: var(--code-muted);
+}
+.wire .legend i {
+  display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+  margin-right: 6px; vertical-align: -1px;
+}
+.wire .legend .h i { background: var(--mark-2); }
+.wire .legend .p i { background: var(--mark); }
+.wire .total { margin-top: 10px; font-size: 12px; color: var(--code-muted); }
+.wire .total b { color: var(--code-ink); }
+
+/* ---- sections ---- */
+section { padding: 56px 0; border-top: 1px solid var(--hairline); }
+.sec-mark {
+  font-family: var(--mono); font-size: 13px; color: var(--muted);
+  display: block; margin-bottom: 6px;
+}
+.sec-mark b { color: var(--mark-2); font-weight: 600; }
+h2 {
+  font-family: var(--mono); font-size: 24px; letter-spacing: -0.02em;
+  margin-bottom: 28px;
+}
+/* features */
+.grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--hairline); border: 1px solid var(--hairline);
+  border-radius: 10px; overflow: hidden;
+}
+.cell { background: var(--surface); padding: 22px; }
+.cell h3 { font-family: var(--mono); font-size: 15px; margin-bottom: 8px; }
+.cell p { font-size: 14px; color: var(--muted); }
+/* code */
+pre.code {
+  background: var(--code-bg); color: var(--code-ink);
+  font-family: var(--mono); font-size: 13.5px; line-height: 1.65;
+  border-radius: 12px; padding: 24px 28px; overflow-x: auto;
+  tab-size: 4;
+}
+pre.code .kw { color: #7FB4C9; }
+pre.code .str { color: #8FC98F; }
+pre.code .num { color: #D9A66B; }
+pre.code .com { color: #5E7280; }
+pre.code .fn { color: #C9B87F; }
+/* trade */
+.trade { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.trade .col {
+  border: 1px solid var(--hairline); border-radius: 10px;
+  background: var(--surface); padding: 24px;
+}
+.trade h3 { font-family: var(--mono); font-size: 15px; margin-bottom: 14px; }
+.trade ul { list-style: none; }
+.trade li {
+  font-size: 14px; color: var(--muted);
+  padding: 6px 0 6px 22px; position: relative;
+}
+.trade li::before {
+  font-family: var(--mono); position: absolute; left: 0;
+}
+.trade .yes li::before { content: "+"; color: var(--mark); font-weight: 700; }
+.trade .no li::before { content: "-"; color: var(--mark-2); font-weight: 700; }
+.trade p.note { margin-top: 16px; font-size: 13px; color: var(--muted); }
+/* bench */
+#bench-chart { margin-top: 8px; }
+.bench-row { display: grid; grid-template-columns: minmax(0,260px) 1fr 90px; gap: 12px; align-items: center; margin-bottom: 8px; }
+.bench-name {
+  font-family: var(--mono); font-size: 12px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bench-track { background: var(--surface); border: 1px solid var(--hairline); border-radius: 5px; height: 18px; position: relative; }
+.bench-bar {
+  position: absolute; inset: 2px auto 2px 2px;
+  background: var(--mark); border-radius: 3px 4px 4px 3px;
+  min-width: 3px;
+}
+.bench-row:hover .bench-bar { background: var(--accent); }
+.bench-val { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; }
+.bench-meta { font-size: 13px; color: var(--muted); margin: 14px 0 0; }
+.bench-fallback { font-size: 14px; color: var(--muted); max-width: 62ch; }
+.bench-fallback table { border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+.bench-fallback td, .bench-fallback th {
+  border: 1px solid var(--hairline); padding: 8px 14px; text-align: left;
+}
+.bench-fallback th { font-family: var(--mono); font-size: 13px; }
+details.bench-table { margin-top: 18px; font-size: 13px; }
+details.bench-table summary { cursor: pointer; font-family: var(--mono); color: var(--muted); }
+details.bench-table table { border-collapse: collapse; margin-top: 10px; }
+details.bench-table td, details.bench-table th {
+  border: 1px solid var(--hairline); padding: 6px 12px;
+  font-family: var(--mono); font-size: 12px; text-align: left;
+}
+/* footer */
+footer {
+  border-top: 1px solid var(--hairline);
+  padding: 32px 0 48px;
+  font-family: var(--mono); font-size: 13px; color: var(--muted);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; gap: 36px; }
+  .grid { grid-template-columns: 1fr; }
+  .trade { grid-template-columns: 1fr; }
+  .bench-row { grid-template-columns: minmax(0,140px) 1fr 80px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <span class="wordmark">parco<span class="cursor"></span></span>
+    <nav class="topnav" aria-label="Main">
+      <a href="#quickstart">quick start</a>
+      <a href="#bench">benchmarks</a>
+      <a href="https://pkg.go.dev/github.com/sonirico/parco">pkg.go.dev</a>
+      <a href="https://github.com/sonirico/parco">github</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero" style="border-top:none">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">// binary serialization for Go</span>
+      <h1>You already know the schema.<br>Stop paying for it <em>on the wire</em>.</h1>
+      <p class="lede">
+        Parco is a binary serializer built on generics: no reflection, no codegen,
+        no struct tags, zero core dependencies. You describe the layout with a
+        builder; parco reads and writes exactly those bytes.
+      </p>
+      <p class="honest">
+        <strong>The honest part:</strong> it's schema-driven, like Protobuf and unlike JSON.
+        Both ends must agree on the layout beforehand. That trade is where the
+        speed comes from — not benchmark tricks.
+      </p>
+      <div class="install">
+        <span class="dollar">$</span>
+        <span id="install-cmd">go get github.com/sonirico/parco</span>
+        <button type="button" id="copy-btn" aria-label="Copy install command">copy</button>
+      </div>
+    </div>
+
+    <figure class="wire" aria-label="Wire layout of a compiled struct">
+      <div class="src"><span class="kw">type</span> Player <span class="kw">struct</span> {
+    Name  <span class="kw">string</span>  <span class="str">// SmallVarchar</span>
+    Score <span class="kw">uint32</span>  <span class="str">// little-endian</span>
+}
+
+p := Player{Name: <span class="str">"Ana"</span>, Score: <span class="num">7</span>}</div>
+      <div class="arrow">└─ compiler.Compile(p, w) ─→ 8 bytes</div>
+      <div class="bytes" id="wire-bytes">
+        <span class="byte h" style="animation-delay:.15s">03</span>
+        <span class="byte p" style="animation-delay:.3s">41</span>
+        <span class="byte p" style="animation-delay:.45s">6E</span>
+        <span class="byte p" style="animation-delay:.6s">61</span>
+        <span class="byte p" style="animation-delay:.75s">07</span>
+        <span class="byte p" style="animation-delay:.9s">00</span>
+        <span class="byte p" style="animation-delay:1.05s">00</span>
+        <span class="byte p" style="animation-delay:1.2s">00</span>
+      </div>
+      <div class="legend">
+        <span class="h"><i></i>length header (uint8)</span>
+        <span class="p"><i></i>payload — "Ana" + uint32 LE</span>
+      </div>
+      <div class="total">Same value as JSON: <b>24 bytes</b>. As parco: <b>8</b>.</div>
+    </figure>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <span class="sec-mark"><b>0x00</b> features</span>
+    <h2>What you get</h2>
+    <div class="grid">
+      <div class="cell">
+        <h3>No reflection</h3>
+        <p>Fields are described with a fluent builder and generics. The compiler knows every type at build time; the runtime never inspects one.</p>
+      </div>
+      <div class="cell">
+        <h3>Composable types</h3>
+        <p>Primitives, slices, maps, arrays, nested structs, optionals. Build a type once, reuse it anywhere — standalone or inside another builder.</p>
+      </div>
+      <div class="cell">
+        <h3>Multi-model streams</h3>
+        <p>Register models under a type ID and parse or compile mixed messages from one reader — or use the global registry.</p>
+      </div>
+      <div class="cell">
+        <h3>You control the layout</h3>
+        <p>Choose byte order per field and header width per collection: a <code>UInt8Header</code> costs one byte for up to 255 elements.</p>
+      </div>
+      <div class="cell">
+        <h3>Allocation-conscious</h3>
+        <p>Pooled buffers on the hot path, hardened against lying length headers: memory grows with data that actually arrives.</p>
+      </div>
+      <div class="cell">
+        <h3>Zero core dependencies</h3>
+        <p>The core API is stdlib only. No runtime library, no generated files to keep in sync, nothing to version but your own code.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="quickstart">
+  <div class="wrap">
+    <span class="sec-mark"><b>0x10</b> quick start</span>
+    <h2>A model in one expression</h2>
+    <pre class="code"><span class="kw">type</span> Point <span class="kw">struct</span> { X, Y <span class="kw">int32</span> }
+
+factory := parco.<span class="fn">ObjectFactory</span>[Point]()
+parser, compiler := parco.<span class="fn">Builder</span>[Point](factory).
+    <span class="fn">Int32</span>(binary.LittleEndian,
+        <span class="kw">func</span>(p *Point) <span class="kw">int32</span> { <span class="kw">return</span> p.X },
+        <span class="kw">func</span>(p *Point, x <span class="kw">int32</span>) { p.X = x },
+    ).
+    <span class="fn">Int32</span>(binary.LittleEndian,
+        <span class="kw">func</span>(p *Point) <span class="kw">int32</span> { <span class="kw">return</span> p.Y },
+        <span class="kw">func</span>(p *Point, y <span class="kw">int32</span>) { p.Y = y },
+    ).
+    <span class="fn">Parco</span>()
+
+<span class="kw">var</span> buf bytes.Buffer
+err := compiler.<span class="fn">Compile</span>(Point{X: <span class="num">1</span>, Y: <span class="num">2</span>}, &amp;buf)  <span class="com">// 8 bytes on the wire</span>
+point, err := parser.<span class="fn">Parse</span>(&amp;buf)                  <span class="com">// {1 2}</span></pre>
+    <p class="bench-meta">Getter compiles, setter parses. The full tour — slices, maps, optionals, nested structs, the model registry — lives in the <a href="https://github.com/sonirico/parco#usage">README</a>.</p>
+  </div>
+</section>
+
+<section id="trade">
+  <div class="wrap">
+    <span class="sec-mark"><b>0x20</b> trade-offs</span>
+    <h2>The trade, stated plainly</h2>
+    <div class="trade">
+      <div class="col yes">
+        <h3>Reach for parco when</h3>
+        <ul>
+          <li>You control both ends of the wire (shared schema)</li>
+          <li>Bandwidth and latency are budget lines, not footnotes</li>
+          <li>You want compile-time safety instead of struct tags</li>
+          <li>IoT, game servers, tight microservice links</li>
+          <li>Predictable memory beats convenience</li>
+        </ul>
+      </div>
+      <div class="col no">
+        <h3>Use something else when</h3>
+        <ul>
+          <li>Strangers consume your API — give them JSON</li>
+          <li>The schema changes faster than you can version it</li>
+          <li>You need cross-language support — that's Protobuf</li>
+          <li>You're debugging by reading payloads with your eyes</li>
+        </ul>
+        <p class="note">Parco is Go-only and will stay that way. If Protobuf already works for you, keep it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="bench">
+  <div class="wrap">
+    <span class="sec-mark"><b>0x30</b> benchmarks</span>
+    <h2>Measured, not promised</h2>
+    <div id="bench-live" hidden>
+      <div id="bench-chart" role="img" aria-label="Latest benchmark results in nanoseconds per operation"></div>
+      <p class="bench-meta">
+        ns/op, latest run on <span id="bench-date"></span> ·
+        commit <a id="bench-commit" href="#"><code></code></a> ·
+        <a href="dev/bench/">full history →</a>
+      </p>
+      <details class="bench-table">
+        <summary>view as table</summary>
+        <table id="bench-table-el">
+          <thead><tr><th>benchmark</th><th>ns/op</th><th>B/op</th><th>allocs/op</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
+    </div>
+    <div id="bench-static" class="bench-fallback">
+      <p>Headline numbers from the reference suite (see <a href="https://github.com/sonirico/parco/blob/main/PERFORMANCE.md">PERFORMANCE.md</a> for methodology and honest caveats):</p>
+      <table>
+        <thead><tr><th>vs</th><th>speed</th><th>payload size</th><th>allocations</th></tr></thead>
+        <tbody>
+          <tr><td>encoding/json</td><td>2–3× faster</td><td>~70% smaller</td><td>~10× fewer</td></tr>
+          <tr><td>msgpack</td><td>comparable</td><td>~40% smaller</td><td>fewer</td></tr>
+        </tbody>
+      </table>
+      <p>Continuous results land on <a href="dev/bench/">the benchmark dashboard</a> after each push to <code>main</code>.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <span>MIT © <a href="https://github.com/sonirico">sonirico</a></span>
+    <span><a href="https://github.com/sonirico/parco">source</a> · <a href="https://pkg.go.dev/github.com/sonirico/parco">docs</a> · <a href="dev/bench/">bench history</a></span>
+  </div>
+</footer>
+
+<script>
+document.getElementById('copy-btn').addEventListener('click', async (ev) => {
+  const btn = ev.currentTarget;
+  try {
+    await navigator.clipboard.writeText(document.getElementById('install-cmd').textContent);
+    btn.textContent = 'copied';
+    setTimeout(() => { btn.textContent = 'copy'; }, 1600);
+  } catch {
+    btn.textContent = 'copy';
+  }
+});
+
+// Benchmark chart: reads the data github-action-benchmark publishes under
+// dev/bench/. If it is not there yet, the static table above stays visible.
+(function () {
+  const s = document.createElement('script');
+  s.src = 'dev/bench/data.js';
+  s.onload = render;
+  s.onerror = () => {};
+  document.body.appendChild(s);
+
+  function render() {
+    const data = window.BENCHMARK_DATA;
+    if (!data || !data.entries) return;
+    const suites = Object.values(data.entries);
+    if (!suites.length || !suites[0].length) return;
+    const latest = suites[0][suites[0].length - 1];
+    const benches = latest.benches.filter(b => b.unit.includes('ns'));
+    if (!benches.length) return;
+
+    const chart = document.getElementById('bench-chart');
+    const max = Math.max(...benches.map(b => b.value));
+    const fmt = v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v.toFixed(v < 10 ? 1 : 0);
+
+    for (const b of benches) {
+      const name = b.name.replace(/^Benchmark_?/, '');
+      const row = document.createElement('div');
+      row.className = 'bench-row';
+      row.title = `${name}: ${b.value.toLocaleString()} ${b.unit}`;
+      row.innerHTML =
+        `<span class="bench-name">${name}</span>` +
+        `<span class="bench-track"><span class="bench-bar" style="width:${Math.max(0.4, b.value / max * 100)}%"></span></span>` +
+        `<span class="bench-val">${fmt(b.value)}</span>`;
+      chart.appendChild(row);
+    }
+
+    const tbody = document.querySelector('#bench-table-el tbody');
+    for (const b of latest.benches) {
+      const extra = /(\d+(?:\.\d+)?) B\/op/.exec(b.extra || '');
+      const allocs = /(\d+) allocs\/op/.exec(b.extra || '');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${b.name}</td><td>${b.value.toLocaleString()}</td>` +
+        `<td>${extra ? extra[1] : '—'}</td><td>${allocs ? allocs[1] : '—'}</td>`;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById('bench-date').textContent =
+      new Date(latest.commit.timestamp).toISOString().slice(0, 10);
+    const link = document.getElementById('bench-commit');
+    link.href = latest.commit.url;
+    link.querySelector('code').textContent = latest.commit.id.slice(0, 7);
+
+    document.getElementById('bench-static').hidden = true;
+    document.getElementById('bench-live').hidden = false;
+  }
+})();
+</script>
+</body>
+</html>
