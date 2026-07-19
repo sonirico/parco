@@ -66,7 +66,8 @@ setup:
     go install golang.org/x/tools/cmd/goimports@latest
     go install github.com/segmentio/golines@latest
     go install golang.org/x/perf/cmd/benchstat@latest
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    # Pinned to the same version the CI lint job runs
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
     @echo "✓ Development tools installed"
 
 # Run all checks (test, lint, format check)

@@ -1,8 +1,8 @@
 [![CI](https://github.com/sonirico/parco/actions/workflows/ci.yml/badge.svg)](https://github.com/sonirico/parco/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sonirico/parco)](https://goreportcard.com/report/github.com/sonirico/parco)
 [![GoDoc](https://godoc.org/github.com/sonirico/parco?status.svg)](https://godoc.org/github.com/sonirico/parco)
-[![License](https://img.shields.io/github/license/sonirico/parco)](LICENSE)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/sonirico/parco)](go.mod)
+[![License](https://badgen.net/github/license/sonirico/parco)](LICENSE)
+[![Go Version](https://badgen.net/badge/go/%3E%3D1.22/00ADD8)](go.mod)
 
 # Parco
 
