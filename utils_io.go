@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"slices"
+	"sync"
 )
 
 // readFull reads exactly len(data) bytes from r, tolerating short reads.
@@ -31,6 +32,58 @@ func readChunked(r io.Reader, size, chunk int) ([]byte, error) {
 		}
 	}
 	return data, nil
+}
+
+// compileWriter buffers a whole message during compilation so that fixed-size
+// types can write into scratch space directly instead of paying a pooled
+// buffer round-trip plus a small Write per field. It is fetched from a pool
+// once per Compile call and flushed to the underlying writer at the end.
+type compileWriter struct {
+	w   io.Writer
+	buf []byte
+}
+
+// scratch grows the buffer by n bytes and returns that space for the caller
+// to fill in place.
+func (cw *compileWriter) scratch(n int) []byte {
+	le := len(cw.buf)
+	cw.buf = slices.Grow(cw.buf, n)[:le+n]
+	return cw.buf[le:]
+}
+
+func (cw *compileWriter) Write(p []byte) (int, error) {
+	cw.buf = append(cw.buf, p...)
+	return len(p), nil
+}
+
+func (cw *compileWriter) flush() error {
+	if len(cw.buf) == 0 {
+		return nil
+	}
+	written, err := cw.w.Write(cw.buf)
+	if err != nil {
+		return err
+	}
+	if written != len(cw.buf) {
+		return ErrCannotWrite
+	}
+	cw.buf = cw.buf[:0]
+	return nil
+}
+
+var compileWriterPool = sync.Pool{New: func() any { return &compileWriter{} }}
+
+func getCompileWriter(w io.Writer) *compileWriter {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
+	cw := compileWriterPool.Get().(*compileWriter)
+	cw.w = w
+	return cw
+}
+
+func putCompileWriter(cw *compileWriter) {
+	cw.w = nil
+	cw.buf = cw.buf[:0]
+	compileWriterPool.Put(cw)
 }
 
 type discard struct {

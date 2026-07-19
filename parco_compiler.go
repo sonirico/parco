@@ -17,6 +17,23 @@ type (
 )
 
 func (c Compiler[T]) Compile(value T, w io.Writer) error {
+	if _, ok := w.(*compileWriter); ok {
+		// Nested compile (e.g. a struct field): the outer Compile already
+		// buffers and flushes.
+		return c.compile(value, w)
+	}
+
+	cw := getCompileWriter(w)
+	defer putCompileWriter(cw)
+
+	if err := c.compile(value, cw); err != nil {
+		return err
+	}
+
+	return cw.flush()
+}
+
+func (c Compiler[T]) compile(value T, w io.Writer) error {
 	for _, f := range c.fields {
 		if err := f.Compile(&value, w); err != nil {
 			return err

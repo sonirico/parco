@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
@@ -176,4 +177,87 @@ func BenchmarkJson_Compile(b *testing.B) {
 
 func BenchmarkMsgpack_Compile(b *testing.B) {
 	benchmarkCompile(b, tests, msgPackCompilerFactory)
+}
+
+func TestCompiler_Compile(t *testing.T) {
+	type pet struct {
+		Specie string
+		Age    uint8
+	}
+	type model struct {
+		Name string
+		Num  uint16
+		Tags []string
+		Meta map[string]uint8
+		Ok   bool
+		Pet  pet
+	}
+
+	petBuilder := Builder[pet](ObjectFactory[pet]()).
+		SmallVarchar(
+			func(p *pet) string { return p.Specie },
+			func(p *pet, specie string) { p.Specie = specie },
+		).
+		UInt8(
+			func(p *pet) uint8 { return p.Age },
+			func(p *pet, age uint8) { p.Age = age },
+		)
+
+	parser, compiler := Builder[model](ObjectFactory[model]()).
+		SmallVarchar(
+			func(m *model) string { return m.Name },
+			func(m *model, name string) { m.Name = name },
+		).
+		UInt16LE(
+			func(m *model) uint16 { return m.Num },
+			func(m *model, num uint16) { m.Num = num },
+		).
+		Slice(SliceField[model, string](
+			UInt8Header(),
+			SmallVarchar(),
+			func(m *model, tags SliceView[string]) { m.Tags = tags },
+			func(m *model) SliceView[string] { return m.Tags },
+		)).
+		Map(MapField[model, string, uint8](
+			UInt8Header(),
+			SmallVarchar(),
+			UInt8(),
+			func(m *model, meta map[string]uint8) { m.Meta = meta },
+			func(m *model) map[string]uint8 { return m.Meta },
+		)).
+		Bool(
+			func(m *model) bool { return m.Ok },
+			func(m *model, ok bool) { m.Ok = ok },
+		).
+		Struct(StructField[model, pet](
+			func(m *model) pet { return m.Pet },
+			func(m *model, p pet) { m.Pet = p },
+			petBuilder,
+		)).
+		Parco()
+
+	value := model{
+		Name: "wire",
+		Num:  4242,
+		Tags: []string{"go", "binary"},
+		Meta: map[string]uint8{"a": 1, "b": 2},
+		Ok:   true,
+		Pet:  pet{Specie: "cat", Age: 3},
+	}
+
+	t.Run("roundtrip preserves every field", func(t *testing.T) {
+		var buf bytes.Buffer
+		require.NoError(t, compiler.Compile(value, &buf))
+
+		parsed, err := parser.Parse(&buf)
+
+		require.NoError(t, err)
+		require.Equal(t, value, parsed)
+	})
+
+	t.Run("short writer surfaces ErrCannotWrite", func(t *testing.T) {
+		err := compiler.Compile(value, &shortWriter{maxBytes: 3})
+
+		require.ErrorIs(t, err, ErrCannotWrite)
+	})
 }

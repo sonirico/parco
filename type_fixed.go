@@ -32,6 +32,10 @@ func (i fixedType[T]) Parse(r io.Reader) (res T, err error) {
 }
 
 func (i fixedType[T]) Compile(item T, w io.Writer) (err error) {
+	if cw, ok := w.(*compileWriter); ok {
+		return i.compiler(item, cw.scratch(i.byteLength))
+	}
+
 	box := i.pool.Get(i.byteLength)
 	defer i.pool.Put(box)
 	data := *box
