@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>parco — binary serialization for Go, byte by byte</title>
 <meta name="description" content="Parco is a high-performance binary serializer for Go: no reflection, no codegen, zero core dependencies. You define the layout; parco writes the bytes.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%231098AD'/%3E%3Cg fill='white'%3E%3Crect x='6' y='2' width='1' height='1'/%3E%3Crect x='5' y='3' width='3' height='1'/%3E%3Crect x='4' y='4' width='5' height='1'/%3E%3Crect x='3' y='5' width='3' height='1'/%3E%3Crect x='7' y='5' width='3' height='1'/%3E%3Crect x='3' y='6' width='8' height='1'/%3E%3Crect x='2' y='7' width='2' height='1'/%3E%3Crect x='6' y='7' width='6' height='1'/%3E%3Crect x='2' y='8' width='1' height='1'/%3E%3Crect x='7' y='8' width='6' height='1'/%3E%3Crect x='8' y='9' width='5' height='1'/%3E%3Crect x='7' y='10' width='6' height='1'/%3E%3Crect x='6' y='11' width='7' height='1'/%3E%3Crect x='4' y='12' width='9' height='1'/%3E%3Crect x='3' y='13' width='11' height='1'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' rx='4' fill='%231098AD'/%3E%3Cg fill='white' transform='translate(2 2)'%3E%3Crect x='5' y='0' width='2' height='1'/%3E%3Crect x='8' y='0' width='2' height='1'/%3E%3Crect x='4' y='1' width='9' height='1'/%3E%3Crect x='3' y='2' width='11' height='1'/%3E%3Crect x='2' y='3' width='12' height='1'/%3E%3Crect x='1' y='4' width='4' height='1'/%3E%3Crect x='6' y='4' width='9' height='1'/%3E%3Crect x='1' y='5' width='14' height='1'/%3E%3Crect x='0' y='6' width='15' height='1'/%3E%3Crect x='0' y='7' width='4' height='1'/%3E%3Crect x='6' y='7' width='9' height='1'/%3E%3Crect x='1' y='8' width='2' height='1'/%3E%3Crect x='6' y='8' width='9' height='1'/%3E%3Crect x='6' y='9' width='8' height='1'/%3E%3Crect x='5' y='10' width='9' height='1'/%3E%3Crect x='5' y='11' width='9' height='1'/%3E%3Crect x='4' y='12' width='10' height='1'/%3E%3Crect x='3' y='13' width='11' height='1'/%3E%3Crect x='2' y='14' width='13' height='1'/%3E%3Crect x='1' y='15' width='14' height='1'/%3E%3C/g%3E%3C/svg%3E">
 <style>
 :root {
   --bg: #F6F8F8;
@@ -287,22 +287,26 @@ footer {
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <symbol id="px-horse" viewBox="0 0 12 12">
+    <symbol id="px-horse" viewBox="0 0 16 16">
       <g fill="currentColor">
-        <rect x="4" y="0" width="1" height="1"/>
-        <rect x="3" y="1" width="3" height="1"/>
-        <rect x="2" y="2" width="5" height="1"/>
-        <rect x="1" y="3" width="3" height="1"/><rect x="5" y="3" width="3" height="1"/>
-        <rect x="1" y="4" width="8" height="1"/>
-        <rect x="0" y="5" width="2" height="1"/><rect x="4" y="5" width="6" height="1"/>
-        <rect x="0" y="6" width="1" height="1"/><rect x="5" y="6" width="6" height="1"/>
-        <rect x="6" y="7" width="5" height="1"/>
-        <rect x="5" y="8" width="6" height="1"/>
-        <rect x="4" y="9" width="7" height="1"/>
-        <rect x="2" y="10" width="9" height="1"/>
-        <rect x="1" y="11" width="11" height="1"/>
+        <rect x="5" y="0" width="2" height="1"/><rect x="8" y="0" width="2" height="1"/>
+        <rect x="4" y="1" width="9" height="1"/>
+        <rect x="3" y="2" width="11" height="1"/>
+        <rect x="2" y="3" width="12" height="1"/>
+        <rect x="1" y="4" width="4" height="1"/><rect x="6" y="4" width="9" height="1"/>
+        <rect x="1" y="5" width="14" height="1"/>
+        <rect x="0" y="6" width="15" height="1"/>
+        <rect x="0" y="7" width="4" height="1"/><rect x="6" y="7" width="9" height="1"/>
+        <rect x="1" y="8" width="2" height="1"/><rect x="6" y="8" width="9" height="1"/>
+        <rect x="6" y="9" width="8" height="1"/>
+        <rect x="5" y="10" width="9" height="1"/>
+        <rect x="5" y="11" width="9" height="1"/>
+        <rect x="4" y="12" width="10" height="1"/>
+        <rect x="3" y="13" width="11" height="1"/>
+        <rect x="2" y="14" width="13" height="1"/>
+        <rect x="1" y="15" width="14" height="1"/>
       </g>
-      <rect class="horse-eye" x="4" y="3" width="1" height="1"/>
+      <rect class="horse-eye" x="5" y="4" width="1" height="1"/>
     </symbol>
   </defs>
 </svg>
@@ -443,8 +447,7 @@ point, err := parser.<span class="fn">Parse</span>(&amp;buf)                  <s
         </p>
         <p class="name-note">
           Two halves, same builder: every model you describe yields its parser
-          and its compiler from one definition. Parco is also the name of a
-          horse — a coincidence too good to waste, so the horse stays.
+          and its compiler from one definition.
         </p>
       </div>
     </div>
