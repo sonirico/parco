@@ -214,7 +214,7 @@ func TestMapType_RoundTrip(t *testing.T) {
 func TestMapType_LargeMaps(t *testing.T) {
 	// Test with a larger map to ensure no issues with scaling
 	value := make(map[int]int)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		value[i] = i * 2
 	}
 

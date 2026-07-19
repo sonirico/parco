@@ -30,7 +30,7 @@ type TestStruct struct {
 
 func fillSeq(le int) []uint16 {
 	r := make([]uint16, le)
-	for i := 0; i < le; i++ {
+	for i := range le {
 		r[i] = uint16(rand.Intn(math.MaxUint16))
 	}
 	return r
@@ -38,7 +38,7 @@ func fillSeq(le int) []uint16 {
 
 func fillMap(le int) map[string]uint8 {
 	r := make(map[string]uint8, le)
-	for i := 0; i < le; i++ {
+	for i := range le {
 		r[strconv.FormatInt(int64(i), 10)] = uint8(rand.Intn(math.MaxUint8))
 	}
 	return r
@@ -150,7 +150,7 @@ func benchmarkCompile(b *testing.B, tests []TestStruct, compileFuncFactory compi
 		compileFunc := compileFuncFactory(test)
 		b.Run(test.Name, func(b *testing.B) {
 			var totalBytes int
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				n, err := compileFunc(test)
 				if err != nil {
 					b.Error(err)

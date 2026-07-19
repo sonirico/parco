@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io"
 	"sync/atomic"
-
-	"github.com/pkg/errors"
 )
 
 type (
@@ -49,7 +47,7 @@ func (b *ModelMultiBuilder[T]) Register(id T, builder builderAny) (*ModelMultiBu
 		b.compilers[id] = builder
 		return b, nil
 	}
-	return b, errors.Wrapf(ErrAlreadyRegistered, "id: %v", id)
+	return b, fmt.Errorf("id: %v: %w", id, ErrAlreadyRegistered)
 }
 
 func (b *ModelMultiBuilder[T]) MustRegister(id T, builder builderAny) *ModelMultiBuilder[T] {
@@ -70,7 +68,7 @@ func (b *ModelMultiBuilder[T]) Parse(r io.Reader) (id T, res any, err error) {
 	p, ok := b.parsers[id]
 
 	if !ok {
-		err = errors.Wrapf(ErrUnknownType, "%v", id)
+		err = fmt.Errorf("%v: %w", id, ErrUnknownType)
 		return
 	}
 
@@ -96,7 +94,7 @@ func (b *ModelMultiBuilder[T]) compile(id T, item any, w io.Writer) (err error) 
 	c, ok := b.compilers[id]
 
 	if !ok {
-		err = errors.Wrapf(ErrUnknownType, "%v", id)
+		err = fmt.Errorf("%v: %w", id, ErrUnknownType)
 		return
 	}
 
