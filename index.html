@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>parco — binary serialization for Go, byte by byte</title>
 <meta name="description" content="Parco is a high-performance binary serializer for Go: no reflection, no codegen, zero core dependencies. You define the layout; parco writes the bytes.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' rx='4' fill='%231098AD'/%3E%3Cg fill='white' transform='translate(2 2)'%3E%3Crect x='5' y='0' width='2' height='1'/%3E%3Crect x='8' y='0' width='2' height='1'/%3E%3Crect x='4' y='1' width='9' height='1'/%3E%3Crect x='3' y='2' width='11' height='1'/%3E%3Crect x='2' y='3' width='12' height='1'/%3E%3Crect x='1' y='4' width='4' height='1'/%3E%3Crect x='6' y='4' width='9' height='1'/%3E%3Crect x='1' y='5' width='14' height='1'/%3E%3Crect x='0' y='6' width='15' height='1'/%3E%3Crect x='0' y='7' width='4' height='1'/%3E%3Crect x='6' y='7' width='9' height='1'/%3E%3Crect x='1' y='8' width='2' height='1'/%3E%3Crect x='6' y='8' width='9' height='1'/%3E%3Crect x='6' y='9' width='8' height='1'/%3E%3Crect x='5' y='10' width='9' height='1'/%3E%3Crect x='5' y='11' width='9' height='1'/%3E%3Crect x='4' y='12' width='10' height='1'/%3E%3Crect x='3' y='13' width='11' height='1'/%3E%3Crect x='2' y='14' width='13' height='1'/%3E%3Crect x='1' y='15' width='14' height='1'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect width='26' height='26' rx='5' fill='%231098AD'/%3E%3Cg fill='white' transform='translate(1 7.5)' %3E%3Cpath d='M4 0h2v1H4zM24 0h1v1h-1zM2 1h5v1H2zM22 1h2v1h-2zM1 2h2v1H1zM4 2h4v1H4zM20 2h3v1h-3zM0 3h21v1H0zM1 4h20v1H1zM2 5h19v1H2zM3 6h17v1H3zM5 7h2v1H5zM9 7h2v1H9zM15 7h2v1h-2zM19 7h2v1h-2zM4 8h2v1H4zM8 8h2v1H8zM16 8h2v1h-2zM20 8h2v1h-2zM3 9h2v1H3zM7 9h2v1H7zM17 9h2v1h-2zM21 9h2v1h-2zM2 10h2v1H2zM6 10h2v1H6zM18 10h2v1h-2zM22 10h2v1h-2z'/%3E%3C/g%3E%3C/svg%3E">
 <style>
 :root {
   --bg: #F6F8F8;
@@ -203,7 +203,7 @@ pre.code .fn { color: #C9B87F; }
 /* etymology */
 .name-flex { display: flex; gap: 48px; align-items: center; }
 .horse-big {
-  width: 128px; height: 128px; flex-shrink: 0;
+  width: min(260px, 60vw); height: auto; flex-shrink: 0;
   color: var(--mark);
 }
 .eq {
@@ -276,7 +276,6 @@ footer {
 @media (max-width: 860px) {
   .hero .wrap { grid-template-columns: 1fr; gap: 36px; }
   .name-flex { flex-direction: column; align-items: flex-start; gap: 28px; }
-  .horse-big { width: 96px; height: 96px; }
   .grid { grid-template-columns: 1fr; }
   .trade { grid-template-columns: 1fr; }
   .bench-row { grid-template-columns: minmax(0,140px) 1fr 80px; }
@@ -287,33 +286,28 @@ footer {
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <symbol id="px-horse" viewBox="0 0 16 16">
+    <symbol id="px-horse" viewBox="0 0 26 11">
       <g fill="currentColor">
-        <rect x="5" y="0" width="2" height="1"/><rect x="8" y="0" width="2" height="1"/>
-        <rect x="4" y="1" width="9" height="1"/>
-        <rect x="3" y="2" width="11" height="1"/>
-        <rect x="2" y="3" width="12" height="1"/>
-        <rect x="1" y="4" width="4" height="1"/><rect x="6" y="4" width="9" height="1"/>
-        <rect x="1" y="5" width="14" height="1"/>
-        <rect x="0" y="6" width="15" height="1"/>
-        <rect x="0" y="7" width="4" height="1"/><rect x="6" y="7" width="9" height="1"/>
-        <rect x="1" y="8" width="2" height="1"/><rect x="6" y="8" width="9" height="1"/>
-        <rect x="6" y="9" width="8" height="1"/>
-        <rect x="5" y="10" width="9" height="1"/>
-        <rect x="5" y="11" width="9" height="1"/>
-        <rect x="4" y="12" width="10" height="1"/>
-        <rect x="3" y="13" width="11" height="1"/>
-        <rect x="2" y="14" width="13" height="1"/>
-        <rect x="1" y="15" width="14" height="1"/>
+        <rect x="4" y="0" width="2" height="1"/><rect x="24" y="0" width="1" height="1"/>
+        <rect x="2" y="1" width="5" height="1"/><rect x="22" y="1" width="2" height="1"/>
+        <rect x="1" y="2" width="2" height="1"/><rect x="4" y="2" width="4" height="1"/><rect x="20" y="2" width="3" height="1"/>
+        <rect x="0" y="3" width="21" height="1"/>
+        <rect x="1" y="4" width="20" height="1"/>
+        <rect x="2" y="5" width="19" height="1"/>
+        <rect x="3" y="6" width="17" height="1"/>
+        <rect x="5" y="7" width="2" height="1"/><rect x="9" y="7" width="2" height="1"/><rect x="15" y="7" width="2" height="1"/><rect x="19" y="7" width="2" height="1"/>
+        <rect x="4" y="8" width="2" height="1"/><rect x="8" y="8" width="2" height="1"/><rect x="16" y="8" width="2" height="1"/><rect x="20" y="8" width="2" height="1"/>
+        <rect x="3" y="9" width="2" height="1"/><rect x="7" y="9" width="2" height="1"/><rect x="17" y="9" width="2" height="1"/><rect x="21" y="9" width="2" height="1"/>
+        <rect x="2" y="10" width="2" height="1"/><rect x="6" y="10" width="2" height="1"/><rect x="18" y="10" width="2" height="1"/><rect x="22" y="10" width="2" height="1"/>
       </g>
-      <rect class="horse-eye" x="5" y="4" width="1" height="1"/>
+      <rect class="horse-eye" x="3" y="2" width="1" height="1"/>
     </symbol>
   </defs>
 </svg>
 
 <header class="topbar">
   <div class="wrap">
-    <span class="wordmark"><svg class="horse-mark" width="20" height="20" aria-hidden="true"><use href="#px-horse"/></svg>parco<span class="cursor"></span></span>
+    <span class="wordmark"><svg class="horse-mark" width="33" height="14" aria-hidden="true"><use href="#px-horse"/></svg>parco<span class="cursor"></span></span>
     <nav class="topnav" aria-label="Main">
       <a href="#quickstart">quick start</a>
       <a href="#bench">benchmarks</a>
