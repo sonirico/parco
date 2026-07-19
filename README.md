@@ -125,7 +125,7 @@ Neither is universally better. Choose based on your constraints:
 go get github.com/sonirico/parco
 ```
 
-Requires **Go 1.19+**.
+Requires **Go 1.22+**.
 
 
 ## Concepts
