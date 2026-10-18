@@ -418,6 +418,18 @@ parser, compiler := parco.<span class="fn">Builder</span>[Point](factory).
 err := compiler.<span class="fn">Compile</span>(Point{X: <span class="num">1</span>, Y: <span class="num">2</span>}, &amp;buf)  <span class="com">// 8 bytes on the wire</span>
 point, err := parser.<span class="fn">Parse</span>(&amp;buf)                  <span class="com">// {1 2}</span></pre>
     <p class="bench-meta">Getter compiles, setter parses. The full tour — slices, maps, optionals, nested structs, the model registry — lives in the <a href="https://github.com/sonirico/parco#usage">README</a>.</p>
+    <h3 style="margin-top:28px">On Go 1.27+: one generic method</h3>
+    <pre class="code">point := parco.<span class="fn">NewModel</span>[Point](factory).
+    <span class="fn">Field</span>(parco.<span class="fn">Int32</span>(binary.LittleEndian),
+        <span class="kw">func</span>(p *Point) <span class="kw">int32</span> { <span class="kw">return</span> p.X },
+        <span class="kw">func</span>(p *Point, x <span class="kw">int32</span>) { p.X = x }).
+    <span class="fn">Field</span>(parco.<span class="fn">Int32</span>(binary.LittleEndian),
+        <span class="kw">func</span>(p *Point) <span class="kw">int32</span> { <span class="kw">return</span> p.Y },
+        <span class="kw">func</span>(p *Point, y <span class="kw">int32</span>) { p.Y = y })
+
+err := point.<span class="fn">Compile</span>(Point{X: <span class="num">1</span>, Y: <span class="num">2</span>}, &amp;buf)  <span class="com">// same 8 bytes</span>
+p, err := point.<span class="fn">Parse</span>(&amp;buf)</pre>
+    <p class="bench-meta"><code>Field</code> takes any <code>Type[U]</code> and infers <code>U</code>; a <code>Model</code> is itself a <code>Type</code>, so nested structs, slices, maps and optionals go through the same call. Needs Go 1.27 (generic methods); the rest of the API still builds on 1.22. Details in the <a href="https://github.com/sonirico/parco#model-builder-go-127">README</a>.</p>
   </div>
 </section>
 
