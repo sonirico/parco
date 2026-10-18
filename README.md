@@ -26,6 +26,8 @@ Many packages rely on struct tags and reflection, which is convenient until you 
   - [Model builder (Go 1.27+)](#model-builder-go-127)
   - [Single types](#single-types)
   - [Multi-model (registry)](#multi-model-parsers--compilers)
+  - [Registry (Go 1.27+)](#registry-go-127)
+  - [Code generation (Go 1.27+)](#code-generation-go-127)
 - [Supported types](#supported-types)
 - [Error handling](#error-handling)
 - [Examples](#examples)
@@ -41,6 +43,7 @@ Many packages rely on struct tags and reflection, which is convenient until you 
 
 - **No reflection** -- Types and fields are described via a fluent builder and generics.
 - **One generic method on Go 1.27+** -- `Model[T].Field[U]` takes any `Type[U]` plus a getter and a setter; the element type is inferred, so nested models, slices, maps and optionals need no per-type builder methods.
+- **Code generation** -- `parco-gen` reads `parco` struct tags and writes the `Model` for you, getters and setters included. Hand-written builders keep working; the generator is optional.
 - **Composable** -- Use primitives, slices, maps, structs, and optional types; nest and reuse builders.
 - **Multi-model on the same stream** -- Register multiple models with a type ID and parse/compile from a single reader/writer.
 - **Control over layout** -- Choose byte order (e.g. `binary.LittleEndian`) for integers and floats; pick header types for length-prefixed data (e.g. `UInt8Header()` for up to 255 elements).
@@ -137,6 +140,7 @@ Requires **Go 1.22+**. The `Model` builder (see [Model builder](#model-builder-g
 | **Type** | A `Type[T]` knows how to `Parse` and `Compile` values of type `T` (e.g. `UInt8()`, `Int(binary.LittleEndian)`). |
 | **Builder** | `Builder[T](factory)` defines the layout of a struct (or model) by adding fields. Each field has a getter (compile) and setter (parse). |
 | **Model** | `NewModel[T](factory)` is the Go 1.27+ builder: one generic method, `Field(type, getter, setter)`, for every kind of field. A `Model[T]` is itself a `Type[T]`, so it nests directly. |
+| **Registry** | `NewRegistry[ID](header)` (Go 1.27+) maps ids to models. It is a `Type[Entry[ID]]`: parse yields the id and the value, compile takes them. Nests like any other type. |
 | **Parser** | Produced by the builder; reads bytes from an `io.Reader` and fills a `T` (using the factory to create the value). |
 | **Compiler** | Produced by the builder; writes a `T` to an `io.Writer`. |
 | **Factory** | `Factory[T]` provides new instances when parsing (e.g. `ObjectFactory[T]()` returns zero value; you can use a pool for reuse). |
@@ -571,6 +575,81 @@ func Print(id int, x any) {
 ```
 
 
+### Registry (Go 1.27+)
+
+`Registry[ID]` is the `Model` counterpart of `MultiBuilder`: a map from id to model that is itself a `Type[Entry[ID]]`. `Register` is a generic method, so the model type is checked at compile time instead of through `any`.
+
+```go
+animal := NewAnimalModel() // hand-written NewModel or parco-gen output
+flat := NewFlatModel()
+
+registry := parco.NewRegistry[uint8](parco.UInt8()).
+  Register(1, animal).
+  Register(2, flat)
+
+var buf bytes.Buffer
+err := registry.Compile(parco.Entry[uint8]{ID: 1, Value: Animal{Specie: "cat", Age: 3}}, &buf)
+entry, err := registry.Parse(&buf) // entry.ID == 1, entry.Value.(Animal)
+```
+
+Because a registry is a `Type`, it can be a field of another model, which is how you put a typed envelope around a payload that varies:
+
+```go
+type Envelope struct {
+  Seq     uint8
+  Payload parco.Entry[uint8]
+}
+
+envelope := parco.NewModel[Envelope](parco.ObjectFactory[Envelope]()).
+  Field(parco.UInt8(), func(e *Envelope) uint8 { return e.Seq }, func(e *Envelope, v uint8) { e.Seq = v }).
+  Field(registry, func(e *Envelope) parco.Entry[uint8] { return e.Payload }, func(e *Envelope, v parco.Entry[uint8]) { e.Payload = v })
+```
+
+Compiling an unregistered id, or a value whose type does not match the registered model, returns `ErrUnknownType`. Registering the same id twice panics.
+
+### Code generation (Go 1.27+)
+
+`parco-gen` turns struct tags into the `Model` you would otherwise write by hand:
+
+```go
+//go:generate go run github.com/sonirico/parco/cmd/parco-gen
+
+type Pet struct {
+  Specie string `parco:"hdr=uint8"`
+  Age    uint8
+}
+
+type Example struct {
+  Greet   string `parco:"hdr=uint8"`
+  Num     uint16 `parco:"be"`
+  Friends []string
+  Grades  map[string]uint8 `parco:"hdr=uint8"`
+  Flags   [3]bool
+  Pet     Pet
+  Pointer *int
+  When    time.Time `parco:"location"`
+  Cache   string `parco:"-"`
+}
+```
+
+`go generate` writes `parco_gen.go` with `NewPetModel()` and `NewExampleModel()`. The wire type comes from the Go type; the tag only adjusts it:
+
+| Go type | Wire type | Tag options |
+|---------|-----------|-------------|
+| `bool`, `uint8`, `int8`, `byte` | `Bool()`, `UInt8()`, ... | |
+| `uint16` ... `int64`, `int`, `uint`, `float32`, `float64` | little-endian | `be` |
+| `string` | `Varchar()` (uint16 header) | `hdr=uint8` -> `SmallVarchar()`, `hdr=uint32`, ... |
+| `[]byte` | `Blob(header)` | `hdr=...` |
+| `[]T` | `Slice(header, T)` | `hdr=...`, `be` applies to `T` |
+| `[N]T` | `Array(N, T)` | `be` applies to `T` |
+| `map[K]V` | `MapType(header, K, V)` | `hdr=...`, `be` |
+| `*T` | `Option(T)` | as `T` |
+| struct declared in the same package | its generated `New<T>Model()` | |
+| `time.Time` | `TimeUTC()` | `location` -> `TimeLocation()` |
+| any field | | `-` skips it |
+
+A struct is generated when at least one of its fields has a `parco` tag, or when it is named with `-type Pet,Example`. Fields go on the wire in declaration order. The generated file carries `//go:build go1.27`; see [examples/codegen](examples/codegen) for the input, the output and a roundtrip test.
+
 ## Supported types
 
 | Field                 | Size                           |
@@ -633,6 +712,7 @@ Run the examples from the repo root:
 | [examples/parser](examples/parser) | Parser-only usage (no compiler). |
 | [examples/registry](examples/registry) | Multi-model: several types on the same stream with `MultiBuilder`. |
 | [examples/registry_singleton](examples/registry_singleton) | Global multi-model registry. |
+| [examples/codegen](examples/codegen) | `parco-gen` input, generated `Model` and roundtrip test (Go 1.27+). |
 
 ```bash
 go run ./examples/registry/
