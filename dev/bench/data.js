@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792336819621,
+  "lastUpdate": 1792340705040,
   "repoUrl": "https://github.com/sonirico/parco",
   "entries": {
     "Benchmark": [
@@ -1536,6 +1536,534 @@ window.BENCHMARK_DATA = {
             "value": 2007,
             "unit": "allocs/op",
             "extra": "6642 times\n4 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sonirico@users.noreply.github.com",
+            "name": "Marquitos",
+            "username": "sonirico"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1aa1f0ae88d26b170469ec926c6bcc6586d9c6c",
+          "message": "Merge pull request #7 from sonirico/perf/parse-reader\n\nperf: one pooled parseReader per Parse instead of a pooled buffer per field",
+          "timestamp": "2026-10-18T18:24:13+02:00",
+          "tree_id": "e7ab21c90ff57014020cb7885214371524db4f60",
+          "url": "https://github.com/sonirico/parco/commit/c1aa1f0ae88d26b170469ec926c6bcc6586d9c6c"
+        },
+        "date": 1792340704705,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkParcoAlloc_Compile/small_size",
+            "value": 1226,
+            "unit": "ns/op\t        91.00 payload_bytes/op\t     184 B/op\t       3 allocs/op",
+            "extra": "916285 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/small_size - ns/op",
+            "value": 1226,
+            "unit": "ns/op",
+            "extra": "916285 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/small_size - payload_bytes/op",
+            "value": 91,
+            "unit": "payload_bytes/op",
+            "extra": "916285 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/small_size - B/op",
+            "value": 184,
+            "unit": "B/op",
+            "extra": "916285 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/small_size - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "916285 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/medium_size",
+            "value": 8398,
+            "unit": "ns/op\t       742.0 payload_bytes/op\t     184 B/op\t       3 allocs/op",
+            "extra": "143031 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/medium_size - ns/op",
+            "value": 8398,
+            "unit": "ns/op",
+            "extra": "143031 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/medium_size - payload_bytes/op",
+            "value": 742,
+            "unit": "payload_bytes/op",
+            "extra": "143031 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/medium_size - B/op",
+            "value": 184,
+            "unit": "B/op",
+            "extra": "143031 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/medium_size - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "143031 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/large_size",
+            "value": 78576,
+            "unit": "ns/op\t      8123 payload_bytes/op\t     186 B/op\t       3 allocs/op",
+            "extra": "15274 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/large_size - ns/op",
+            "value": 78576,
+            "unit": "ns/op",
+            "extra": "15274 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/large_size - payload_bytes/op",
+            "value": 8123,
+            "unit": "payload_bytes/op",
+            "extra": "15274 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/large_size - B/op",
+            "value": 186,
+            "unit": "B/op",
+            "extra": "15274 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoAlloc_Compile/large_size - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "15274 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/small_size",
+            "value": 1215,
+            "unit": "ns/op\t        91.00 payload_bytes/op\t     184 B/op\t       3 allocs/op",
+            "extra": "947614 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/small_size - ns/op",
+            "value": 1215,
+            "unit": "ns/op",
+            "extra": "947614 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/small_size - payload_bytes/op",
+            "value": 91,
+            "unit": "payload_bytes/op",
+            "extra": "947614 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/small_size - B/op",
+            "value": 184,
+            "unit": "B/op",
+            "extra": "947614 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/small_size - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "947614 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/medium_size",
+            "value": 8314,
+            "unit": "ns/op\t       742.0 payload_bytes/op\t     184 B/op\t       3 allocs/op",
+            "extra": "142815 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/medium_size - ns/op",
+            "value": 8314,
+            "unit": "ns/op",
+            "extra": "142815 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/medium_size - payload_bytes/op",
+            "value": 742,
+            "unit": "payload_bytes/op",
+            "extra": "142815 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/medium_size - B/op",
+            "value": 184,
+            "unit": "B/op",
+            "extra": "142815 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/medium_size - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "142815 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/large_size",
+            "value": 81636,
+            "unit": "ns/op\t      8123 payload_bytes/op\t     186 B/op\t       3 allocs/op",
+            "extra": "15332 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/large_size - ns/op",
+            "value": 81636,
+            "unit": "ns/op",
+            "extra": "15332 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/large_size - payload_bytes/op",
+            "value": 8123,
+            "unit": "payload_bytes/op",
+            "extra": "15332 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/large_size - B/op",
+            "value": 186,
+            "unit": "B/op",
+            "extra": "15332 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoDiscard_Compile/large_size - allocs/op",
+            "value": 3,
+            "unit": "allocs/op",
+            "extra": "15332 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/small_size",
+            "value": 2509,
+            "unit": "ns/op\t       267.0 payload_bytes/op\t     970 B/op\t      23 allocs/op",
+            "extra": "476839 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/small_size - ns/op",
+            "value": 2509,
+            "unit": "ns/op",
+            "extra": "476839 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/small_size - payload_bytes/op",
+            "value": 267,
+            "unit": "payload_bytes/op",
+            "extra": "476839 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/small_size - B/op",
+            "value": 970,
+            "unit": "B/op",
+            "extra": "476839 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/small_size - allocs/op",
+            "value": 23,
+            "unit": "allocs/op",
+            "extra": "476839 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/medium_size",
+            "value": 24922,
+            "unit": "ns/op\t      1677 payload_bytes/op\t    7685 B/op\t     203 allocs/op",
+            "extra": "47964 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/medium_size - ns/op",
+            "value": 24922,
+            "unit": "ns/op",
+            "extra": "47964 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/medium_size - payload_bytes/op",
+            "value": 1677,
+            "unit": "payload_bytes/op",
+            "extra": "47964 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/medium_size - B/op",
+            "value": 7685,
+            "unit": "B/op",
+            "extra": "47964 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/medium_size - allocs/op",
+            "value": 203,
+            "unit": "allocs/op",
+            "extra": "47964 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/large_size",
+            "value": 313668,
+            "unit": "ns/op\t     16629 payload_bytes/op\t   76499 B/op\t    2003 allocs/op",
+            "extra": "3553 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/large_size - ns/op",
+            "value": 313668,
+            "unit": "ns/op",
+            "extra": "3553 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/large_size - payload_bytes/op",
+            "value": 16629,
+            "unit": "payload_bytes/op",
+            "extra": "3553 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/large_size - B/op",
+            "value": 76499,
+            "unit": "B/op",
+            "extra": "3553 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkJson_Compile/large_size - allocs/op",
+            "value": 2003,
+            "unit": "allocs/op",
+            "extra": "3553 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/small_size",
+            "value": 2303,
+            "unit": "ns/op\t       155.0 payload_bytes/op\t     762 B/op\t      25 allocs/op",
+            "extra": "494830 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/small_size - ns/op",
+            "value": 2303,
+            "unit": "ns/op",
+            "extra": "494830 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/small_size - payload_bytes/op",
+            "value": 155,
+            "unit": "payload_bytes/op",
+            "extra": "494830 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/small_size - B/op",
+            "value": 762,
+            "unit": "B/op",
+            "extra": "494830 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/small_size - allocs/op",
+            "value": 25,
+            "unit": "allocs/op",
+            "extra": "494830 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/medium_size",
+            "value": 16569,
+            "unit": "ns/op\t       991.0 payload_bytes/op\t    4068 B/op\t     207 allocs/op",
+            "extra": "71974 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/medium_size - ns/op",
+            "value": 16569,
+            "unit": "ns/op",
+            "extra": "71974 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/medium_size - payload_bytes/op",
+            "value": 991,
+            "unit": "payload_bytes/op",
+            "extra": "71974 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/medium_size - B/op",
+            "value": 4068,
+            "unit": "B/op",
+            "extra": "71974 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/medium_size - allocs/op",
+            "value": 207,
+            "unit": "allocs/op",
+            "extra": "71974 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/large_size",
+            "value": 159286,
+            "unit": "ns/op\t     10171 payload_bytes/op\t   37437 B/op\t    2007 allocs/op",
+            "extra": "6885 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/large_size - ns/op",
+            "value": 159286,
+            "unit": "ns/op",
+            "extra": "6885 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/large_size - payload_bytes/op",
+            "value": 10171,
+            "unit": "payload_bytes/op",
+            "extra": "6885 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/large_size - B/op",
+            "value": 37437,
+            "unit": "B/op",
+            "extra": "6885 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkMsgpack_Compile/large_size - allocs/op",
+            "value": 2007,
+            "unit": "allocs/op",
+            "extra": "6885 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/small_size",
+            "value": 1383,
+            "unit": "ns/op\t     680 B/op\t       9 allocs/op",
+            "extra": "836437 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/small_size - ns/op",
+            "value": 1383,
+            "unit": "ns/op",
+            "extra": "836437 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/small_size - B/op",
+            "value": 680,
+            "unit": "B/op",
+            "extra": "836437 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/small_size - allocs/op",
+            "value": 9,
+            "unit": "allocs/op",
+            "extra": "836437 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/medium_size",
+            "value": 9063,
+            "unit": "ns/op\t    4192 B/op\t      99 allocs/op",
+            "extra": "130796 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/medium_size - ns/op",
+            "value": 9063,
+            "unit": "ns/op",
+            "extra": "130796 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/medium_size - B/op",
+            "value": 4192,
+            "unit": "B/op",
+            "extra": "130796 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/medium_size - allocs/op",
+            "value": 99,
+            "unit": "allocs/op",
+            "extra": "130796 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/large_size",
+            "value": 93252,
+            "unit": "ns/op\t   61249 B/op\t    1001 allocs/op",
+            "extra": "12825 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/large_size - ns/op",
+            "value": 93252,
+            "unit": "ns/op",
+            "extra": "12825 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/large_size - B/op",
+            "value": 61249,
+            "unit": "B/op",
+            "extra": "12825 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoBytes_Parse/large_size - allocs/op",
+            "value": 1001,
+            "unit": "allocs/op",
+            "extra": "12825 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/small_size",
+            "value": 2124,
+            "unit": "ns/op\t     680 B/op\t       9 allocs/op",
+            "extra": "543018 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/small_size - ns/op",
+            "value": 2124,
+            "unit": "ns/op",
+            "extra": "543018 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/small_size - B/op",
+            "value": 680,
+            "unit": "B/op",
+            "extra": "543018 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/small_size - allocs/op",
+            "value": 9,
+            "unit": "allocs/op",
+            "extra": "543018 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/medium_size",
+            "value": 15093,
+            "unit": "ns/op\t    4194 B/op\t      99 allocs/op",
+            "extra": "78810 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/medium_size - ns/op",
+            "value": 15093,
+            "unit": "ns/op",
+            "extra": "78810 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/medium_size - B/op",
+            "value": 4194,
+            "unit": "B/op",
+            "extra": "78810 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/medium_size - allocs/op",
+            "value": 99,
+            "unit": "allocs/op",
+            "extra": "78810 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/large_size",
+            "value": 152756,
+            "unit": "ns/op\t   61350 B/op\t    1001 allocs/op",
+            "extra": "7797 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/large_size - ns/op",
+            "value": 152756,
+            "unit": "ns/op",
+            "extra": "7797 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/large_size - B/op",
+            "value": 61350,
+            "unit": "B/op",
+            "extra": "7797 times\n4 procs"
+          },
+          {
+            "name": "BenchmarkParcoReader_Parse/large_size - allocs/op",
+            "value": 1001,
+            "unit": "allocs/op",
+            "extra": "7797 times\n4 procs"
           }
         ]
       }
