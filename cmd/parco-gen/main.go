@@ -43,6 +43,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Generated source is meant to be read by everyone, like gofmt output.
+	//nolint:gosec // G306: 0o644 is intentional for source files
 	if err := os.WriteFile(filepath.Join(dir, *output), code, 0o644); err != nil {
 		fmt.Fprintln(os.Stderr, "parco-gen:", err)
 		os.Exit(1)

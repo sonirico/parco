@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,8 @@ func TestGenerate(t *testing.T) {
 		got, err := generate("../../examples/codegen", nil)
 
 		require.NoError(t, err)
-		require.Equal(t, string(want), string(got))
+		// git may check the golden file out with CRLF on Windows.
+		require.Equal(t, strings.ReplaceAll(string(want), "\r\n", "\n"), string(got))
 	})
 
 	t.Run("explicit type list selects untagged structs", func(t *testing.T) {
