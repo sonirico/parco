@@ -20,6 +20,13 @@ func (i fixedType[T]) ParseBytes(data []byte) (res T, err error) {
 }
 
 func (i fixedType[T]) Parse(r io.Reader) (res T, err error) {
+	if pr, ok := r.(*parseReader); ok {
+		data, err := pr.next(i.byteLength)
+		if err != nil {
+			return res, err
+		}
+		return i.parser(data)
+	}
 	box := i.pool.Get(i.byteLength)
 	defer i.pool.Put(box)
 	data := (*box)[:i.byteLength]

@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Parse reads through one pooled reader per call instead of a pooled buffer
+  per field, mirroring what Compile already did for writes. Over bytes
+  (`ParseBytes`) fixed-size types and varchar/blob read windows of the input
+  without copying; over an `io.Reader` each field still reads exactly its own
+  bytes, never ahead, so a shared stream keeps its framing. Measured on the
+  parser benchmarks: `ParseBytes` 45-50% faster, `Parse(io.Reader)` 18-23%
+  faster, allocations unchanged.
+- New `BenchmarkParcoBytes_Parse` and `BenchmarkParcoReader_Parse`.
+
+### Fixed
+
+- `Parser.Parse` returned a nil error when a field failed to parse; the
+  error now surfaces.
+
 ## v0.14.0 - 2026-10-18
 
 Everything in this release is additive and lives behind a `//go:build go1.27`

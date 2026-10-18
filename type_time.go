@@ -23,15 +23,22 @@ func (t TimeType) ByteLength() int {
 }
 
 func (t TimeType) Parse(r io.Reader) (time.Time, error) {
-	box := t.pooler.Get(timeByteLength)
-	defer t.pooler.Put(box)
+	var data []byte
+	if pr, ok := r.(*parseReader); ok {
+		var err error
+		if data, err = pr.next(timeByteLength); err != nil {
+			return noopTime, err
+		}
+	} else {
+		box := t.pooler.Get(timeByteLength)
+		defer t.pooler.Put(box)
 
-	data := *box
-	data = data[:timeByteLength]
+		data = (*box)[:timeByteLength]
 
-	n, err := r.Read(data)
-	if n != timeByteLength || err != nil {
-		return noopTime, ErrCannotRead
+		n, err := r.Read(data)
+		if n != timeByteLength || err != nil {
+			return noopTime, ErrCannotRead
+		}
 	}
 
 	tim, err := ParseTime(data, binary.LittleEndian)
