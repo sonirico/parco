@@ -430,6 +430,15 @@ point, err := parser.<span class="fn">Parse</span>(&amp;buf)                  <s
 err := point.<span class="fn">Compile</span>(Point{X: <span class="num">1</span>, Y: <span class="num">2</span>}, &amp;buf)  <span class="com">// same 8 bytes</span>
 p, err := point.<span class="fn">Parse</span>(&amp;buf)</pre>
     <p class="bench-meta"><code>Field</code> takes any <code>Type[U]</code> and infers <code>U</code>; a <code>Model</code> is itself a <code>Type</code>, so nested structs, slices, maps and optionals go through the same call. Needs Go 1.27 (generic methods); the rest of the API still builds on 1.22. Details in the <a href="https://github.com/sonirico/parco#model-builder-go-127">README</a>.</p>
+    <h3 style="margin-top:28px">Or let parco-gen write it</h3>
+    <pre class="code"><span class="com">//go:generate go run github.com/sonirico/parco/cmd/parco-gen</span>
+
+<span class="kw">type</span> Point <span class="kw">struct</span> {
+    X <span class="kw">int32</span> <span class="str">`parco:"le"`</span>
+    Y <span class="kw">int32</span>
+}
+<span class="com">// go generate -> parco_gen.go with NewPointModel()</span></pre>
+    <p class="bench-meta">Wire types are inferred from the Go types; tags adjust byte order, header size, or skip a field. Getters and setters are generated, hand-written builders still work. Several models on one stream go through <code>Registry</code>, a <code>Type</code> keyed by id. See the <a href="https://github.com/sonirico/parco#code-generation-go-127">README</a>.</p>
   </div>
 </section>
 
