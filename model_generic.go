@@ -62,11 +62,22 @@ func (m *Model[T]) ByteLength() int {
 }
 
 func (m *Model[T]) ParseBytes(data []byte) (T, error) {
-	buf := NewBufferCursor(data, 0)
-	return m.Parse(&buf)
+	pr := getParseReaderBytes(data)
+	defer putParseReader(pr)
+	return m.parse(pr)
 }
 
 func (m *Model[T]) Parse(r io.Reader) (T, error) {
+	if pr, ok := r.(*parseReader); ok {
+		// Nested inside another Parse call: the outer one owns the reader.
+		return m.parse(pr)
+	}
+	pr := getParseReader(r)
+	defer putParseReader(pr)
+	return m.parse(pr)
+}
+
+func (m *Model[T]) parse(r io.Reader) (T, error) {
 	item := m.factory.Get()
 	for _, f := range m.fields {
 		if err := f.parse(&item, r); err != nil {

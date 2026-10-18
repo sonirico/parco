@@ -102,3 +102,72 @@ func (d *discard) Reset() {
 func (d *discard) Size() int {
 	return d.counter
 }
+
+// parseReader wraps the source of one Parse call so that fixed-size types can
+// read their bytes without a pooled buffer round-trip per field. Over a byte
+// slice it hands out windows of the slice without copying. Over an io.Reader
+// it reads exactly what each field asks for into its own scratch and never
+// ahead, so a stream shared with other messages keeps its framing. It is
+// fetched from a pool once per Parse call.
+type parseReader struct {
+	r       io.Reader
+	data    []byte
+	pos     int
+	scratch []byte
+}
+
+// next returns the next n bytes of the message. The slice is only valid until
+// the following call.
+func (pr *parseReader) next(n int) ([]byte, error) {
+	if pr.r == nil {
+		to := pr.pos + n
+		if to > len(pr.data) {
+			return nil, ErrCannotRead
+		}
+		b := pr.data[pr.pos:to]
+		pr.pos = to
+		return b, nil
+	}
+	if cap(pr.scratch) < n {
+		pr.scratch = make([]byte, n)
+	}
+	b := pr.scratch[:n]
+	if err := readFull(pr.r, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func (pr *parseReader) Read(p []byte) (int, error) {
+	if pr.r != nil {
+		return pr.r.Read(p)
+	}
+	b, err := pr.next(len(p))
+	if err != nil {
+		return 0, err
+	}
+	return copy(p, b), nil
+}
+
+var parseReaderPool = sync.Pool{New: func() any { return &parseReader{} }}
+
+func getParseReader(r io.Reader) *parseReader {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
+	pr := parseReaderPool.Get().(*parseReader)
+	pr.r = r
+	return pr
+}
+
+func getParseReaderBytes(data []byte) *parseReader {
+	//nolint:errcheck // Type assertion is safe - we control pool contents
+	pr := parseReaderPool.Get().(*parseReader)
+	pr.data = data
+	return pr
+}
+
+func putParseReader(pr *parseReader) {
+	pr.r = nil
+	pr.data = nil
+	pr.pos = 0
+	parseReaderPool.Put(pr)
+}

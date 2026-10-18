@@ -50,6 +50,15 @@ func (v varType[T]) Parse(r io.Reader) (res T, err error) {
 		return
 	}
 
+	if pr, ok := r.(*parseReader); ok && pr.r == nil {
+		// Parsing from bytes: the window is bounded by the input, no copy needed.
+		var data []byte
+		if data, err = pr.next(size); err != nil {
+			return
+		}
+		return v.ParseBytes(data)
+	}
+
 	box := v.pool.Get(size)
 	defer v.pool.Put(box)
 

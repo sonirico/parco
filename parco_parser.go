@@ -22,13 +22,21 @@ func ParserModel[T any](factory Factory[T]) *Parser[T] {
 }
 
 func (p *Parser[T]) ParseBytes(data []byte) (T, error) {
-	buf := NewBufferCursor(data, 0)
+	pr := getParseReaderBytes(data)
+	defer putParseReader(pr)
 
-	return p.parse(&buf)
+	return p.parse(pr)
 }
 
 func (p *Parser[T]) Parse(r io.Reader) (T, error) {
-	return p.parse(r)
+	if pr, ok := r.(*parseReader); ok {
+		// Nested inside another Parse call: the outer one owns the reader.
+		return p.parse(pr)
+	}
+	pr := getParseReader(r)
+	defer putParseReader(pr)
+
+	return p.parse(pr)
 }
 
 func (p *Parser[T]) parse(r io.Reader) (T, error) {
@@ -36,7 +44,7 @@ func (p *Parser[T]) parse(r io.Reader) (T, error) {
 
 	for _, f := range p.fields {
 		if err := f.Parse(&model, r); err != nil {
-			return model, nil
+			return model, err
 		}
 	}
 
