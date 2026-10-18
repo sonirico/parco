@@ -10,6 +10,10 @@ type (
 	}
 )
 
+func (i OptionalType[T]) ByteLength() int {
+	return i.header.ByteLength()
+}
+
 func (i OptionalType[T]) Parse(r io.Reader) (*T, error) {
 	some, err := i.header.Parse(r)
 	if err != nil {

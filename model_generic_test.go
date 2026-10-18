@@ -70,6 +70,7 @@ func TestModel(t *testing.T) {
 		Meta map[string]uint8
 		Ok   bool
 		Pet  pet
+		Ptr  *int
 	}
 
 	petModel := NewModel[pet](ObjectFactory[pet]()).
@@ -99,8 +100,12 @@ func TestModel(t *testing.T) {
 		Skip(2).
 		Field(petModel,
 			func(m *model) pet { return m.Pet },
-			func(m *model, v pet) { m.Pet = v })
+			func(m *model, v pet) { m.Pet = v }).
+		Field(Option(Int(binary.LittleEndian)),
+			func(m *model) *int { return m.Ptr },
+			func(m *model, v *int) { m.Ptr = v })
 
+	seven := 7
 	value := model{
 		Name: "wire",
 		Num:  4242,
@@ -108,6 +113,7 @@ func TestModel(t *testing.T) {
 		Meta: map[string]uint8{"a": 1, "b": 2},
 		Ok:   true,
 		Pet:  pet{Specie: "cat", Age: 3},
+		Ptr:  &seven,
 	}
 
 	t.Run("roundtrip preserves every field", func(t *testing.T) {

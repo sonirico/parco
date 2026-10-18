@@ -23,6 +23,7 @@ Many packages rely on struct tags and reflection, which is convenient until you 
 - [Quick start](#quick-start)
 - [Usage](#usage)
   - [Parser & compiler (single model)](#parser--compiler-single-model)
+  - [Model builder (Go 1.27+)](#model-builder-go-127)
   - [Single types](#single-types)
   - [Multi-model (registry)](#multi-model-parsers--compilers)
 - [Supported types](#supported-types)
@@ -39,6 +40,7 @@ Many packages rely on struct tags and reflection, which is convenient until you 
 ## Features
 
 - **No reflection** -- Types and fields are described via a fluent builder and generics.
+- **One generic method on Go 1.27+** -- `Model[T].Field[U]` takes any `Type[U]` plus a getter and a setter; the element type is inferred, so nested models, slices, maps and optionals need no per-type builder methods.
 - **Composable** -- Use primitives, slices, maps, structs, and optional types; nest and reuse builders.
 - **Multi-model on the same stream** -- Register multiple models with a type ID and parse/compile from a single reader/writer.
 - **Control over layout** -- Choose byte order (e.g. `binary.LittleEndian`) for integers and floats; pick header types for length-prefixed data (e.g. `UInt8Header()` for up to 255 elements).
@@ -125,7 +127,7 @@ Neither is universally better. Choose based on your constraints:
 go get github.com/sonirico/parco
 ```
 
-Requires **Go 1.22+**.
+Requires **Go 1.22+**. The `Model` builder (see [Model builder](#model-builder-go-127)) uses generic methods and is only compiled on **Go 1.27+**; the rest of the API is the same on every supported version.
 
 
 ## Concepts
@@ -134,6 +136,7 @@ Requires **Go 1.22+**.
 |--------|-------------|
 | **Type** | A `Type[T]` knows how to `Parse` and `Compile` values of type `T` (e.g. `UInt8()`, `Int(binary.LittleEndian)`). |
 | **Builder** | `Builder[T](factory)` defines the layout of a struct (or model) by adding fields. Each field has a getter (compile) and setter (parse). |
+| **Model** | `NewModel[T](factory)` is the Go 1.27+ builder: one generic method, `Field(type, getter, setter)`, for every kind of field. A `Model[T]` is itself a `Type[T]`, so it nests directly. |
 | **Parser** | Produced by the builder; reads bytes from an `io.Reader` and fills a `T` (using the factory to create the value). |
 | **Compiler** | Produced by the builder; writes a `T` to an `io.Writer`. |
 | **Factory** | `Factory[T]` provides new instances when parsing (e.g. `ObjectFactory[T]()` returns zero value; you can use a pool for reuse). |
@@ -359,6 +362,66 @@ func main() {
   }
 }
 ```
+
+### Model builder (Go 1.27+)
+
+Go 1.27 lets a method declare its own type parameters. `Model[T]` uses that to replace the per-type builder methods (`UInt8`, `Varchar`, `Slice(SliceField[...])`, `Struct(StructField[...])`, ...) with a single `Field` method. `T` comes from the receiver and the field type `U` is inferred from the `Type[U]` you pass, so nothing is repeated at the call site.
+
+```go
+type Pet struct {
+  Specie string
+  Age    uint8
+}
+
+type Example struct {
+  Greet   string
+  Friends []string
+  Grades  map[string]uint8
+  Pet     Pet
+  Pointer *int
+}
+
+petModel := parco.NewModel[Pet](parco.ObjectFactory[Pet]()).
+  Field(parco.SmallVarchar(),
+    func(p *Pet) string { return p.Specie },
+    func(p *Pet, v string) { p.Specie = v }).
+  Field(parco.UInt8(),
+    func(p *Pet) uint8 { return p.Age },
+    func(p *Pet, v uint8) { p.Age = v })
+
+exampleModel := parco.NewModel[Example](parco.ObjectFactory[Example]()).
+  Field(parco.SmallVarchar(),
+    func(e *Example) string { return e.Greet },
+    func(e *Example, v string) { e.Greet = v }).
+  Field(parco.Slice(parco.UInt8Header(), parco.SmallVarchar()),
+    func(e *Example) parco.Iterable[string] { return parco.SliceView[string](e.Friends) },
+    func(e *Example, v parco.Iterable[string]) { e.Friends = v.Unwrap() }).
+  Field(parco.MapType(parco.UInt8Header(), parco.SmallVarchar(), parco.UInt8()),
+    func(e *Example) map[string]uint8 { return e.Grades },
+    func(e *Example, v map[string]uint8) { e.Grades = v }).
+  Field(petModel,
+    func(e *Example) Pet { return e.Pet },
+    func(e *Example, v Pet) { e.Pet = v }).
+  Skip(2).
+  Field(parco.Option(parco.Int(binary.LittleEndian)),
+    func(e *Example) *int { return e.Pointer },
+    func(e *Example, v *int) { e.Pointer = v })
+
+var buf bytes.Buffer
+if err := exampleModel.Compile(value, &buf); err != nil {
+  log.Fatal(err)
+}
+parsed, err := exampleModel.Parse(&buf)
+```
+
+Compared with `Builder[T]`:
+
+- One method, `Field`, instead of one per primitive plus `Struct`, `Slice`, `Map`, `Array` and `Option`.
+- No `SliceField[Example, string](...)` style constructors: the `Type[U]` combinators (`Slice`, `MapType`, `Array`, `Option`) are passed directly.
+- A `Model[T]` implements `Type[T]`, so a nested struct is just another `Field`.
+- `Parse`, `ParseBytes` and `Compile` live on the model; there is no separate parser and compiler pair.
+
+The wire format is identical to `Builder[T]`, and the compile path performs the same (see the `BenchmarkParcoModelDiscard_Compile` and `BenchmarkParcoDiscard_Compile` pair). The file that defines `Model` carries a `//go:build go1.27` constraint, so on older toolchains the symbol does not exist and `go.mod` can stay at 1.22.
 
 ### Single types
 

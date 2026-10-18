@@ -11,7 +11,7 @@ jobs:
     name: Test
     strategy:
       matrix:
-        go-version: ['1.22', '1.23', '1.24', '1.25']
+        go-version: ['1.22', '1.23', '1.24', '1.25', '1.26', '1.27']
         os: [ubuntu-latest, macos-latest, windows-latest]
         exclude:
           # Go 1.22 binaries lack the LC_UUID load command required by the
